@@ -20,7 +20,37 @@ export function useScanUrl() {
   return useMutation<string, Error, string>({
     mutationFn: async (url: string) => {
       if (!actor) throw new Error("Actor not ready");
-      return actor.scanUrl(url);
+      const result = await actor.scanUrl(url);
+      console.debug(
+        "[CyberScan] scanUrl raw response (first 500 chars):",
+        result.slice(0, 500),
+      );
+      return result;
+    },
+    onError: (err) => {
+      console.error("[CyberScan] scanUrl mutation error:", err);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scanHistory"] });
+    },
+  });
+}
+
+export function useScanIp() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation<string, Error, string>({
+    mutationFn: async (ip: string) => {
+      if (!actor) throw new Error("Actor not ready");
+      const result = await actor.scanIp(ip);
+      console.debug(
+        "[CyberScan] scanIp raw response (first 500 chars):",
+        result.slice(0, 500),
+      );
+      return result;
+    },
+    onError: (err) => {
+      console.error("[CyberScan] scanIp mutation error:", err);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scanHistory"] });
@@ -34,7 +64,41 @@ export function useLookupDns() {
   return useMutation<string, Error, string>({
     mutationFn: async (domain: string) => {
       if (!actor) throw new Error("Actor not ready");
-      return actor.lookupDns(domain);
+      const result = await actor.lookupDns(domain);
+      console.debug(
+        "[CyberScan] lookupDns raw response (first 500 chars):",
+        result.slice(0, 500),
+      );
+      return result;
+    },
+    onError: (err) => {
+      console.error("[CyberScan] lookupDns mutation error:", err);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scanHistory"] });
+    },
+  });
+}
+
+export function usePhishingDetect() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation<string, Error, string>({
+    mutationFn: async (url: string) => {
+      if (!actor) throw new Error("Actor not ready");
+      // scanPhishing is available on the backend; cast to extended interface
+      const extActor = actor as typeof actor & {
+        scanPhishing: (url: string) => Promise<string>;
+      };
+      const result = await extActor.scanPhishing(url);
+      console.debug(
+        "[CyberScan] scanPhishing raw response (first 500 chars):",
+        result.slice(0, 500),
+      );
+      return result;
+    },
+    onError: (err) => {
+      console.error("[CyberScan] scanPhishing mutation error:", err);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scanHistory"] });

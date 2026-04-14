@@ -10,6 +10,29 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface AiAnalysisResult {
+  'explanation' : string,
+  'verdict' : string,
+  'available' : boolean,
+  'confidence' : number,
+  'riskLevel' : string,
+}
+export type LoginResult = { 'userNotFound' : null } |
+  { 'wrongPassword' : null } |
+  { 'success' : string };
+export type OtpGenerationResult = { 'userNotFound' : null } |
+  { 'internalError' : null } |
+  { 'success' : string };
+export type PasswordResetResult = { 'userNotFound' : null } |
+  { 'invalidOtp' : null } |
+  { 'success' : string } |
+  { 'otpExpired' : null };
+export type RegistrationResult = { 'invalidEmailFormat' : null } |
+  { 'invalidUsernameLength' : null } |
+  { 'duplicateEmail' : null } |
+  { 'duplicateUsername' : null } |
+  { 'success' : string } |
+  { 'invalidPasswordLength' : null };
 export interface ResultSummary {
   'threatsFound' : Array<string>,
   'recordType' : string,
@@ -19,12 +42,14 @@ export interface ResultSummary {
   'riskScore' : bigint,
 }
 export interface ScanHistoryEntry {
+  'aiAnalysis' : [] | [AiAnalysisResult],
   'scanType' : ScanType,
   'summary' : ResultSummary,
   'target' : string,
   'timestamp' : Time,
 }
-export type ScanType = { 'dns' : null } |
+export type ScanType = { 'ip' : null } |
+  { 'dns' : null } |
   { 'url' : null };
 export type Time = bigint;
 export interface TransformationInput {
@@ -36,6 +61,13 @@ export interface TransformationOutput {
   'body' : Uint8Array,
   'headers' : Array<http_header>,
 }
+export interface User {
+  'otp' : [] | [string],
+  'username' : string,
+  'password' : string,
+  'otpTimestamp' : [] | [Time],
+  'email' : string,
+}
 export interface http_header { 'value' : string, 'name' : string }
 export interface http_request_result {
   'status' : bigint,
@@ -43,15 +75,30 @@ export interface http_request_result {
   'headers' : Array<http_header>,
 }
 export interface _SERVICE {
+  'allUsers' : ActorMethod<[], Array<User>>,
+  'analyzeWithAI' : ActorMethod<[string, string], AiAnalysisResult>,
+  'authenticateRequest' : ActorMethod<[], undefined>,
+  'authenticateUser' : ActorMethod<[string, string], LoginResult>,
+  'createUser' : ActorMethod<[string, string, string], RegistrationResult>,
   'getHistoryEntryByTarget' : ActorMethod<[string], ScanHistoryEntry>,
   'getScanHistory' : ActorMethod<[], Array<ScanHistoryEntry>>,
+  'getUsernameByEmail' : ActorMethod<[string], string>,
   'lookupDns' : ActorMethod<[string], string>,
   'ping' : ActorMethod<[], string>,
+  'requestPasswordReset' : ActorMethod<[string], OtpGenerationResult>,
+  'scanIp' : ActorMethod<[string], string>,
+  'scanPhishing' : ActorMethod<[string], string>,
   'scanUrl' : ActorMethod<[string], string>,
+  'setAbuseIpDbApiKey' : ActorMethod<[string], undefined>,
+  'setAiApiKey' : ActorMethod<[string], boolean>,
   'setSafeBrowsingApiKey' : ActorMethod<[string], undefined>,
   'setVirusTotalApiKey' : ActorMethod<[string], undefined>,
   'setWhoisApiKey' : ActorMethod<[string], undefined>,
   'transform' : ActorMethod<[TransformationInput], TransformationOutput>,
+  'verifyOtpAndResetPassword' : ActorMethod<
+    [string, string, string],
+    PasswordResetResult
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

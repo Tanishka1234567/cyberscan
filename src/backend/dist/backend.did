@@ -1,0 +1,115 @@
+type http_request_result = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type http_header = 
+ record {
+   name: text;
+   value: text;
+ };
+type User = 
+ record {
+   email: text;
+   otp: opt text;
+   otpTimestamp: opt Time;
+   password: text;
+   username: text;
+ };
+type TransformationOutput = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type TransformationInput = 
+ record {
+   context: blob;
+   response: http_request_result;
+ };
+type Time = int;
+type ScanType = 
+ variant {
+   dns;
+   ip;
+   url;
+ };
+type ScanHistoryEntry = 
+ record {
+   aiAnalysis: opt AiAnalysisResult;
+   scanType: ScanType;
+   summary: ResultSummary;
+   target: text;
+   timestamp: Time;
+ };
+type ResultSummary = 
+ record {
+   recordType: text;
+   recordValue: text;
+   resolverName: text;
+   riskScore: nat;
+   threatsFound: vec text;
+   verdict: text;
+ };
+type RegistrationResult = 
+ variant {
+   duplicateEmail;
+   duplicateUsername;
+   invalidEmailFormat;
+   invalidPasswordLength;
+   invalidUsernameLength;
+   success: text;
+ };
+type PasswordResetResult = 
+ variant {
+   invalidOtp;
+   otpExpired;
+   success: text;
+   userNotFound;
+ };
+type OtpGenerationResult = 
+ variant {
+   internalError;
+   success: text;
+   userNotFound;
+ };
+type LoginResult = 
+ variant {
+   success: text;
+   userNotFound;
+   wrongPassword;
+ };
+type AiAnalysisResult = 
+ record {
+   available: bool;
+   confidence: float64;
+   explanation: text;
+   riskLevel: text;
+   verdict: text;
+ };
+service : {
+  allUsers: () -> (vec User) query;
+  analyzeWithAI: (target: text, scanType: text) -> (AiAnalysisResult);
+  authenticateRequest: () -> () query;
+  authenticateUser: (email: text, password: text) -> (LoginResult);
+  createUser: (email: text, username: text, password: text) ->
+   (RegistrationResult);
+  getHistoryEntryByTarget: (target: text) -> (ScanHistoryEntry);
+  getScanHistory: () -> (vec ScanHistoryEntry);
+  getUsernameByEmail: (email: text) -> (text);
+  lookupDns: (domain: text) -> (text);
+  ping: () -> (text) query;
+  requestPasswordReset: (email: text) -> (OtpGenerationResult);
+  scanIp: (ip: text) -> (text);
+  scanPhishing: (url: text) -> (text);
+  scanUrl: (url: text) -> (text);
+  setAbuseIpDbApiKey: (newKey: text) -> ();
+  setAiApiKey: (apiKey: text) -> (bool);
+  setSafeBrowsingApiKey: (newKey: text) -> ();
+  setVirusTotalApiKey: (newKey: text) -> ();
+  setWhoisApiKey: (newKey: text) -> ();
+  transform: (input: TransformationInput) -> (TransformationOutput) query;
+  verifyOtpAndResetPassword: (email: text, otp: text, newPassword: text) ->
+   (PasswordResetResult);
+}

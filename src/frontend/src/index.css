@@ -1,5 +1,19 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 
+@font-face {
+  font-family: "GeistMono";
+  src: url("/assets/fonts/GeistMono.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "BricolageGrotesque";
+  src: url("/assets/fonts/BricolageGrotesque.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,41 +21,41 @@
 @layer base {
   :root {
     --radius: 0.75rem;
-    --background: 0.12 0.025 245;
-    --foreground: 0.94 0.015 250;
-    --card: 0.17 0.025 245;
-    --card-foreground: 0.94 0.015 250;
-    --popover: 0.2 0.025 245;
-    --popover-foreground: 0.94 0.015 250;
-    --primary: 0.89 0.21 118;
-    --primary-foreground: 0.1 0.03 245;
-    --secondary: 0.22 0.03 245;
-    --secondary-foreground: 0.94 0.015 250;
-    --muted: 0.22 0.025 245;
-    --muted-foreground: 0.62 0.04 245;
-    --accent: 0.89 0.21 118;
-    --accent-foreground: 0.1 0.03 245;
-    --destructive: 0.62 0.22 22;
-    --destructive-foreground: 0.97 0 0;
-    --border: 0.28 0.04 245;
-    --input: 0.2 0.035 245;
-    --ring: 0.89 0.21 118;
-    --success: 0.73 0.16 162;
-    --warning: 0.7 0.18 48;
-    --danger: 0.62 0.22 22;
-    --chart-1: 0.89 0.21 118;
-    --chart-2: 0.73 0.16 162;
-    --chart-3: 0.62 0.22 22;
-    --chart-4: 0.7 0.18 48;
-    --chart-5: 0.62 0.13 265;
-    --sidebar: 0.15 0.025 245;
-    --sidebar-foreground: 0.94 0.015 250;
-    --sidebar-primary: 0.89 0.21 118;
-    --sidebar-primary-foreground: 0.1 0.03 245;
-    --sidebar-accent: 0.22 0.03 245;
-    --sidebar-accent-foreground: 0.94 0.015 250;
-    --sidebar-border: 0.28 0.04 245;
-    --sidebar-ring: 0.89 0.21 118;
+    --background: 0.08 0.02 250;
+    --foreground: 0.95 0.02 250;
+    --card: 0.15 0.05 255;
+    --card-foreground: 0.95 0.02 250;
+    --popover: 0.18 0.05 255;
+    --popover-foreground: 0.95 0.02 250;
+    --primary: 0.65 0.22 250;
+    --primary-foreground: 0.08 0.02 250;
+    --secondary: 0.18 0.04 245;
+    --secondary-foreground: 0.95 0.02 250;
+    --muted: 0.2 0.03 250;
+    --muted-foreground: 0.6 0.05 250;
+    --accent: 0.6 0.23 305;
+    --accent-foreground: 0.08 0.02 250;
+    --destructive: 0.65 0.2 335;
+    --destructive-foreground: 0.95 0.02 250;
+    --border: 0.25 0.08 260;
+    --input: 0.18 0.06 255;
+    --ring: 0.65 0.22 250;
+    --success: 0.65 0.2 150;
+    --warning: 0.7 0.22 35;
+    --danger: 0.65 0.2 335;
+    --chart-1: 0.65 0.22 250;
+    --chart-2: 0.6 0.23 305;
+    --chart-3: 0.65 0.2 335;
+    --chart-4: 0.7 0.22 35;
+    --chart-5: 0.65 0.2 150;
+    --sidebar: 0.12 0.03 250;
+    --sidebar-foreground: 0.95 0.02 250;
+    --sidebar-primary: 0.65 0.22 250;
+    --sidebar-primary-foreground: 0.08 0.02 250;
+    --sidebar-accent: 0.6 0.23 305;
+    --sidebar-accent-foreground: 0.95 0.02 250;
+    --sidebar-border: 0.25 0.08 260;
+    --sidebar-ring: 0.65 0.22 250;
   }
 
   * {
@@ -57,69 +71,235 @@
     font-family: "Inter", system-ui, sans-serif;
     background: linear-gradient(
       135deg,
-      oklch(0.12 0.025 245) 0%,
-      oklch(0.15 0.03 240) 100%
+      oklch(0.08 0.02 250) 0%,
+      oklch(0.1 0.03 245) 100%
     );
     min-height: 100vh;
+    position: relative;
+  }
+
+  /* CRT Scanline overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      oklch(0.65 0.22 250 / 0.02) 0px,
+      oklch(0.65 0.22 250 / 0.02) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    pointer-events: none;
+    z-index: 0;
   }
 }
 
 @layer utilities {
   .glass {
-    background: oklch(0.17 0.025 245 / 0.7);
+    background: oklch(0.15 0.05 255 / 0.6);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid oklch(0.28 0.04 245 / 0.5);
+    border: 1px solid oklch(0.65 0.22 250 / 0.2);
   }
 
   .glass-strong {
-    background: oklch(0.17 0.025 245 / 0.9);
+    background: oklch(0.15 0.05 255 / 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid oklch(0.28 0.04 245 / 0.6);
+    border: 1px solid oklch(0.65 0.22 250 / 0.3);
   }
 
-  .glow-lime {
-    box-shadow: 0 0 20px oklch(0.89 0.21 118 / 0.4), 0 0 40px
-      oklch(0.89 0.21 118 / 0.15);
+  /* Neon glow utilities */
+  .glow-blue {
+    box-shadow: 0 0 20px oklch(0.65 0.22 250 / 0.5), 0 0 40px
+      oklch(0.65 0.22 250 / 0.2);
   }
 
-  .glow-lime-text {
-    text-shadow: 0 0 20px oklch(0.89 0.21 118 / 0.8), 0 0 40px
-      oklch(0.89 0.21 118 / 0.4);
+  .glow-neon-blue {
+    box-shadow: 0 0 20px oklch(0.65 0.22 250 / 0.5), 0 0 40px
+      oklch(0.65 0.22 250 / 0.2);
   }
 
-  .glow-teal {
-    box-shadow: 0 0 20px oklch(0.73 0.16 162 / 0.4);
+  .glow-neon-blue-text {
+    text-shadow: 0 0 20px oklch(0.65 0.22 250 / 0.8), 0 0 40px
+      oklch(0.65 0.22 250 / 0.4);
   }
 
-  .glow-red {
-    box-shadow: 0 0 20px oklch(0.62 0.22 22 / 0.4);
+  .glow-magenta {
+    box-shadow: 0 0 20px oklch(0.6 0.23 305 / 0.5), 0 0 40px
+      oklch(0.6 0.23 305 / 0.2);
+  }
+
+  .glow-pink {
+    box-shadow: 0 0 20px oklch(0.65 0.2 335 / 0.5), 0 0 40px
+      oklch(0.65 0.2 335 / 0.2);
+  }
+
+  .glow-danger {
+    box-shadow: 0 0 20px oklch(0.65 0.2 335 / 0.5), 0 0 40px
+      oklch(0.65 0.2 335 / 0.2);
+  }
+
+  /* Neon glow borders */
+  .border-glow {
+    border: 2px solid oklch(0.65 0.22 250 / 0.5);
+    box-shadow: inset 0 0 20px oklch(0.65 0.22 250 / 0.1), 0 0 20px
+      oklch(0.65 0.22 250 / 0.2);
+  }
+
+  .border-glow-accent {
+    border: 2px solid oklch(0.6 0.23 305 / 0.5);
+    box-shadow: inset 0 0 20px oklch(0.6 0.23 305 / 0.1), 0 0 20px
+      oklch(0.6 0.23 305 / 0.2);
+  }
+
+  /* ===== Holographic card overlay ===== */
+  .holo-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .holo-card::before {
+    content: "";
+    position: absolute;
+    inset: -50%;
+    border-radius: inherit;
+    z-index: 0;
+    pointer-events: none;
+    background: conic-gradient(
+      oklch(0.65 0.22 250 / 0.12),
+      oklch(0.72 0.15 210 / 0.1),
+      oklch(0.6 0.23 305 / 0.12),
+      oklch(0.65 0.2 335 / 0.1),
+      oklch(0.65 0.22 250 / 0.12)
+    );
+    animation: holoShimmer 6s linear infinite;
+    opacity: 0.1;
+    transition: opacity 0.3s ease;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+  }
+
+  .holo-card:hover::before {
+    opacity: 0.18;
+  }
+
+  /* ===== Animated gradient button ===== */
+  .cyber-gradient-btn {
+    background: linear-gradient(
+      270deg,
+      oklch(0.65 0.22 250),
+      oklch(0.6 0.23 305),
+      oklch(0.65 0.2 335),
+      oklch(0.65 0.22 250)
+    );
+    background-size: 300% 300%;
+    animation: gradientShift 4s ease infinite;
+    text-shadow: 0 0 8px currentColor;
+    color: oklch(0.08 0.02 250);
+    font-weight: 700;
+    border: none;
+    box-shadow: 0 0 20px oklch(0.65 0.22 250 / 0.35), 0 0 40px
+      oklch(0.6 0.23 305 / 0.15);
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+  }
+
+  .cyber-gradient-btn:hover {
+    box-shadow: 0 0 30px oklch(0.65 0.22 250 / 0.6), 0 0 60px
+      oklch(0.6 0.23 305 / 0.3);
+    transform: scale(1.03) translateY(-1px);
+  }
+
+  /* ===== Animated gradient section background ===== */
+  .cyber-gradient-bg {
+    background: linear-gradient(
+      270deg,
+      oklch(0.65 0.22 250 / 0.05),
+      oklch(0.6 0.23 305 / 0.05),
+      oklch(0.65 0.2 335 / 0.05),
+      oklch(0.65 0.22 250 / 0.05)
+    );
+    background-size: 300% 300%;
+    animation: gradientShift 8s ease infinite;
+  }
+
+  /* ===== Animated conic-gradient ticker border ===== */
+  .ticker-border-wrap {
+    position: relative;
+    border-radius: 1rem;
+  }
+
+  .ticker-border-wrap::before {
+    display: none;
+  }
+
+  /* ===== Live badge heartbeat ===== */
+  .live-heartbeat {
+    animation: heartbeat 1s ease-in-out infinite;
+  }
+
+  /* ===== Typewriter ===== */
+  .typewriter-text {
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid oklch(0.65 0.22 250);
+    animation: typewriterIn 2.5s steps(30) 0.3s forwards, cursorBlink 0.75s
+      step-start 0.3s 4;
+    width: 0;
+  }
+
+  /* ===== Triple ring pulse ===== */
+  .triple-pulse {
+    position: relative;
+  }
+
+  .triple-pulse::before,
+  .triple-pulse::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 9999px;
+    border: 1.5px solid oklch(0.65 0.2 335 / 0.5);
+    animation: pulseRing 1.8s ease-out infinite;
+  }
+
+  .triple-pulse::after {
+    inset: -12px;
+    animation-delay: 0.4s;
+  }
+
+  /* ===== Threat flash-in ===== */
+  .threat-flash-in {
+    animation: threatFlash 0.6s ease-out forwards;
   }
 }
 
+/* ===== Glitch animation — blue/magenta/pink ===== */
 @keyframes glitch {
   0% {
     transform: translate(0);
-    text-shadow: 0 0 20px oklch(0.89 0.21 118 / 0.8);
+    text-shadow: 0 0 20px oklch(0.65 0.22 250 / 0.8);
   }
   2% {
     transform: translate(-2px, 0);
-    text-shadow: -2px 0 oklch(0.62 0.22 22 / 0.9), 2px 0
-      oklch(0.73 0.16 162 / 0.9);
+    text-shadow: -2px 0 oklch(0.6 0.23 305 / 0.9), 2px 0
+      oklch(0.65 0.2 335 / 0.9);
   }
   4% {
     transform: translate(2px, 0);
-    text-shadow: 2px 0 oklch(0.62 0.22 22 / 0.9), -2px 0
-      oklch(0.73 0.16 162 / 0.9);
+    text-shadow: 2px 0 oklch(0.6 0.23 305 / 0.9), -2px 0
+      oklch(0.65 0.2 335 / 0.9);
   }
   6% {
     transform: translate(0);
-    text-shadow: 0 0 20px oklch(0.89 0.21 118 / 0.8);
+    text-shadow: 0 0 20px oklch(0.65 0.22 250 / 0.8);
   }
   100% {
     transform: translate(0);
-    text-shadow: 0 0 20px oklch(0.89 0.21 118 / 0.8);
+    text-shadow: 0 0 20px oklch(0.65 0.22 250 / 0.8);
   }
 }
 
@@ -159,17 +339,18 @@
 }
 
 .glitch-text::before {
-  color: oklch(0.62 0.22 22);
+  color: oklch(0.6 0.23 305);
   animation: glitch-clip 4s steps(1) infinite;
   transform: translate(-2px, 0);
 }
 
 .glitch-text::after {
-  color: oklch(0.73 0.16 162);
+  color: oklch(0.65 0.2 335);
   animation: glitch-clip 4s steps(1) infinite reverse;
   transform: translate(2px, 0);
 }
 
+/* ===== Scanline overlay on sections ===== */
 .scan-overlay::after {
   content: "";
   position: absolute;
@@ -178,13 +359,14 @@
     0deg,
     transparent,
     transparent 2px,
-    oklch(0.89 0.21 118 / 0.03) 2px,
-    oklch(0.89 0.21 118 / 0.03) 4px
+    oklch(0.65 0.22 250 / 0.03) 2px,
+    oklch(0.65 0.22 250 / 0.03) 4px
   );
   pointer-events: none;
   z-index: 1;
 }
 
+/* ===== Pulse ring animation (neon blue) ===== */
 @keyframes pulseRing {
   0% {
     transform: scale(0.9);
@@ -206,7 +388,7 @@
   position: absolute;
   inset: -8px;
   border-radius: 50%;
-  border: 2px solid oklch(0.89 0.21 118 / 0.6);
+  border: 2px solid oklch(0.65 0.22 250 / 0.6);
   animation: pulseRing 1.5s ease-out infinite;
 }
 
@@ -214,6 +396,7 @@
   animation-delay: 0.5s;
 }
 
+/* ===== Fade animations ===== */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -242,6 +425,7 @@
   animation: fadeIn 0.4s ease-out forwards;
 }
 
+/* ===== Stagger children ===== */
 .stagger > *:nth-child(1) {
   animation-delay: 0.05s;
 }
@@ -258,9 +442,10 @@
   animation-delay: 0.25s;
 }
 
+/* ===== Nav active (neon blue underline) ===== */
 .nav-active {
-  color: oklch(0.89 0.21 118);
-  text-shadow: 0 0 12px oklch(0.89 0.21 118 / 0.6);
+  color: oklch(0.65 0.22 250);
+  text-shadow: 0 0 12px oklch(0.65 0.22 250 / 0.6);
 }
 
 .nav-active::after {
@@ -270,33 +455,36 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: oklch(0.89 0.21 118);
-  box-shadow: 0 0 8px oklch(0.89 0.21 118 / 0.8);
+  background: oklch(0.65 0.22 250);
+  box-shadow: 0 0 8px oklch(0.65 0.22 250 / 0.8);
   border-radius: 1px;
 }
 
+/* ===== Card hover ===== */
 .card-hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .card-hover:hover {
   transform: translateY(-2px);
-  border-color: oklch(0.89 0.21 118 / 0.4);
-  box-shadow: 0 8px 32px oklch(0.89 0.21 118 / 0.1);
+  border-color: oklch(0.65 0.22 250 / 0.4);
+  box-shadow: 0 8px 32px oklch(0.65 0.22 250 / 0.15);
 }
 
+/* ===== Scrollbar (cyberpunk blue) ===== */
 ::-webkit-scrollbar {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: oklch(0.15 0.025 245);
+  background: oklch(0.12 0.03 250);
 }
 ::-webkit-scrollbar-thumb {
-  background: oklch(0.28 0.04 245);
+  background: oklch(0.25 0.08 260);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.89 0.21 118 / 0.6);
+  background: oklch(0.65 0.22 250 / 0.8);
+  box-shadow: 0 0 10px oklch(0.65 0.22 250 / 0.5);
 }
 
 /* ===== Threat Ticker ===== */
@@ -317,20 +505,98 @@
   animation-play-state: paused;
 }
 
+/* ===== Holographic shimmer keyframe ===== */
+@keyframes holoShimmer {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== Gradient shift (buttons & backgrounds) ===== */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* ===== Animated border spin ===== */
+@keyframes borderSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== Live heartbeat ===== */
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1.0);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ===== Typewriter ===== */
+@keyframes typewriterIn {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes cursorBlink {
+  0%,
+  100% {
+    border-color: oklch(0.65 0.22 250);
+  }
+  50% {
+    border-color: transparent;
+  }
+}
+
+/* ===== Threat flash animation ===== */
+@keyframes threatFlash {
+  0% {
+    background-color: oklch(0.65 0.2 335 / 0.18);
+    box-shadow: 0 0 20px oklch(0.65 0.2 335 / 0.4);
+  }
+  60% {
+    background-color: oklch(0.65 0.2 335 / 0.06);
+    box-shadow: 0 0 8px oklch(0.65 0.2 335 / 0.1);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
 /* ===== Print / PDF Report Styles ===== */
 .print-header {
   display: none;
 }
 
 @media print {
-  /* Hide UI chrome */
   .print-hide,
   nav,
   header {
     display: none !important;
   }
 
-  /* Show print header */
   .print-header {
     display: block !important;
     margin-bottom: 24px;
@@ -342,13 +608,10 @@
   .print-header-inner {
     text-align: left;
   }
-
-  /* Show compare report table */
   .print-report-header {
     display: block !important;
   }
 
-  /* Reset backgrounds */
   body {
     background: #fff !important;
     color: #000 !important;
@@ -363,7 +626,6 @@
     box-shadow: none !important;
   }
 
-  /* Text contrast */
   p,
   span,
   td,
@@ -376,17 +638,13 @@
     text-shadow: none !important;
   }
 
-  /* Keep monospace for IPs */
   .font-mono {
     font-family: "Courier New", monospace !important;
   }
-
-  /* Page breaks */
   .glass {
     break-inside: avoid;
   }
 
-  /* Footer */
   body::after {
     content: "CONFIDENTIAL \2014 Generated by CyberScan Security Platform";
     display: block;

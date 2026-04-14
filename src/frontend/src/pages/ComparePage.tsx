@@ -11,6 +11,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+const NEON_BLUE = "oklch(0.65 0.22 250)";
+const NEON_PINK = "oklch(0.65 0.20 335)";
+const ORANGE = "oklch(0.70 0.18 48)";
+
 type Verdict = "SAFE" | "SUSPICIOUS" | "MALICIOUS";
 
 interface CompareResult {
@@ -27,9 +31,8 @@ interface CompareResult {
 
 function hashUrl(url: string): number {
   let h = 5381;
-  for (let i = 0; i < url.length; i++) {
+  for (let i = 0; i < url.length; i++)
     h = ((h * 33) ^ url.charCodeAt(i)) & 0x7fffffff;
-  }
   return h >>> 0;
 }
 
@@ -70,33 +73,27 @@ function buildResult(url: string, raw: string | null): CompareResult {
 }
 
 function RiskGauge({ score }: { score: number }) {
-  const clampedScore = Math.max(0, Math.min(100, score));
-  const angle = 180 - (clampedScore / 100) * 180;
+  const c = Math.max(0, Math.min(100, score));
+  const angle = 180 - (c / 100) * 180;
   const rad = (angle * Math.PI) / 180;
   const r = 60;
   const cx = 85;
   const cy = 80;
   const x = cx + r * Math.cos(rad);
   const y = cy - r * Math.sin(rad);
-  const color =
-    clampedScore >= 70
-      ? "oklch(0.62 0.22 22)"
-      : clampedScore >= 40
-        ? "oklch(0.70 0.18 48)"
-        : "oklch(0.89 0.21 118)";
+  const color = c >= 70 ? NEON_PINK : c >= 40 ? ORANGE : NEON_BLUE;
   const bgArcPath = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
   const scoreArcPath =
-    clampedScore === 0
+    c === 0
       ? ""
-      : `M ${cx - r} ${cy} A ${r} ${r} 0 ${clampedScore > 50 ? 1 : 0} 1 ${x.toFixed(2)} ${y.toFixed(2)}`;
-
+      : `M ${cx - r} ${cy} A ${r} ${r} 0 ${c > 50 ? 1 : 0} 1 ${x.toFixed(2)} ${y.toFixed(2)}`;
   return (
     <div className="flex flex-col items-center">
       <svg
         width="170"
         height="100"
         viewBox="0 0 170 100"
-        aria-label={`Risk score: ${clampedScore}`}
+        aria-label={`Risk score: ${c}`}
       >
         <title>Risk Score</title>
         <path
@@ -125,7 +122,7 @@ function RiskGauge({ score }: { score: number }) {
           fontWeight="800"
           fontFamily="monospace"
         >
-          {clampedScore}
+          {c}
         </text>
         <text
           x={cx}
@@ -146,21 +143,21 @@ function VerdictBadge({ verdict }: { verdict: Verdict }) {
   const configs = {
     SAFE: {
       icon: CheckCircle,
-      color: "oklch(0.89 0.21 118)",
-      bg: "oklch(0.89 0.21 118 / 0.12)",
-      border: "oklch(0.89 0.21 118 / 0.4)",
+      color: NEON_BLUE,
+      bg: `${NEON_BLUE.replace(")", " / 0.12)")}`,
+      border: `${NEON_BLUE.replace(")", " / 0.4)")}`,
     },
     SUSPICIOUS: {
       icon: AlertTriangle,
-      color: "oklch(0.70 0.18 48)",
-      bg: "oklch(0.70 0.18 48 / 0.12)",
-      border: "oklch(0.70 0.18 48 / 0.4)",
+      color: ORANGE,
+      bg: `${ORANGE.replace(")", " / 0.12)")}`,
+      border: `${ORANGE.replace(")", " / 0.4)")}`,
     },
     MALICIOUS: {
       icon: XCircle,
-      color: "oklch(0.62 0.22 22)",
-      bg: "oklch(0.62 0.22 22 / 0.12)",
-      border: "oklch(0.62 0.22 22 / 0.4)",
+      color: NEON_PINK,
+      bg: `${NEON_PINK.replace(")", " / 0.12)")}`,
+      border: `${NEON_PINK.replace(")", " / 0.4)")}`,
     },
   };
   const cfg = configs[verdict];
@@ -193,7 +190,7 @@ function BarChart({
   higherIsBetter: boolean;
 }) {
   const bestA = higherIsBetter ? valueA >= valueB : valueA <= valueB;
-  const winColor = "oklch(0.89 0.21 118)";
+  const winColor = NEON_BLUE;
   const loseColor = "oklch(0.28 0.04 245)";
   return (
     <div className="mb-4">
@@ -201,50 +198,35 @@ function BarChart({
         {category}
       </p>
       <div className="space-y-1.5">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono w-4 text-muted-foreground">A</span>
-          <div
-            className="flex-1 h-3 rounded-full"
-            style={{ background: "oklch(0.20 0.025 245)" }}
-          >
+        {[
+          { label: "A", value: valueA, best: bestA },
+          { label: "B", value: valueB, best: !bestA },
+        ].map((bar) => (
+          <div key={bar.label} className="flex items-center gap-3">
+            <span className="text-xs font-mono w-4 text-muted-foreground">
+              {bar.label}
+            </span>
             <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${valueA}%`,
-                background: bestA ? winColor : loseColor,
-                boxShadow: bestA ? `0 0 8px ${winColor}` : "none",
-              }}
-            />
+              className="flex-1 h-3 rounded-full"
+              style={{ background: "oklch(0.20 0.025 245)" }}
+            >
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{
+                  width: `${bar.value}%`,
+                  background: bar.best ? winColor : loseColor,
+                  boxShadow: bar.best ? `0 0 8px ${winColor}` : "none",
+                }}
+              />
+            </div>
+            <span
+              className="text-xs font-mono w-8 text-right"
+              style={{ color: bar.best ? winColor : "oklch(0.62 0.04 245)" }}
+            >
+              {bar.value}%
+            </span>
           </div>
-          <span
-            className="text-xs font-mono w-8 text-right"
-            style={{ color: bestA ? winColor : "oklch(0.62 0.04 245)" }}
-          >
-            {valueA}%
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono w-4 text-muted-foreground">B</span>
-          <div
-            className="flex-1 h-3 rounded-full"
-            style={{ background: "oklch(0.20 0.025 245)" }}
-          >
-            <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${valueB}%`,
-                background: !bestA ? winColor : loseColor,
-                boxShadow: !bestA ? `0 0 8px ${winColor}` : "none",
-              }}
-            />
-          </div>
-          <span
-            className="text-xs font-mono w-8 text-right"
-            style={{ color: !bestA ? winColor : "oklch(0.62 0.04 245)" }}
-          >
-            {valueB}%
-          </span>
-        </div>
+        ))}
       </div>
     </div>
   );
@@ -276,8 +258,8 @@ function ScanSide({
         <span
           className="h-7 w-7 rounded-lg flex items-center justify-center text-sm font-black"
           style={{
-            background: "oklch(0.89 0.21 118 / 0.15)",
-            color: "oklch(0.89 0.21 118)",
+            background: `${NEON_BLUE.replace(")", " / 0.15)")}`,
+            color: NEON_BLUE,
           }}
         >
           {label}
@@ -286,7 +268,6 @@ function ScanSide({
           URL {label}
         </span>
       </div>
-
       <div className="flex gap-2">
         <Input
           value={url}
@@ -294,13 +275,19 @@ function ScanSide({
           onKeyDown={(e) => e.key === "Enter" && onScan()}
           placeholder="https://example.com"
           data-ocid={`compare.url_${label.toLowerCase()}_input`}
-          className="flex-1 h-10 bg-navy-600 border-border text-foreground placeholder:text-muted-foreground/50 font-mono text-sm"
+          className="flex-1 h-10 border-border text-foreground placeholder:text-muted-foreground/50 font-mono text-sm"
+          style={{ background: "oklch(0.12 0.04 255 / 0.5)" }}
         />
         <Button
           onClick={onScan}
           disabled={isPending || !url.trim()}
           data-ocid={`compare.scan_${label.toLowerCase()}_button`}
-          className="h-10 px-4 bg-lime text-navy-900 hover:bg-lime/90 font-bold glow-lime text-sm"
+          className="h-10 px-4 font-bold text-sm"
+          style={{
+            background: NEON_BLUE,
+            color: "oklch(0.08 0.02 250)",
+            boxShadow: `0 0 12px ${NEON_BLUE.replace(")", " / 0.3)")}`,
+          }}
         >
           {isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -309,17 +296,18 @@ function ScanSide({
           )}
         </Button>
       </div>
-
       {isPending && (
         <div
           data-ocid={`compare.url_${label.toLowerCase()}_loading_state`}
           className="flex items-center justify-center py-8 gap-3"
         >
-          <Loader2 className="h-6 w-6 text-lime animate-spin" />
+          <Loader2
+            className="h-6 w-6 animate-spin"
+            style={{ color: NEON_BLUE }}
+          />
           <span className="text-sm text-muted-foreground">Scanning...</span>
         </div>
       )}
-
       {result && !isPending && (
         <div className="space-y-4 fade-in">
           <div className="flex flex-col items-center gap-3">
@@ -340,10 +328,7 @@ function ScanSide({
               <p
                 className="text-xl font-black font-mono"
                 style={{
-                  color:
-                    result.threatsFound > 0
-                      ? "oklch(0.62 0.22 22)"
-                      : "oklch(0.89 0.21 118)",
+                  color: result.threatsFound > 0 ? NEON_PINK : NEON_BLUE,
                 }}
               >
                 {result.threatsFound}
@@ -364,7 +349,6 @@ function ScanSide({
           </div>
         </div>
       )}
-
       {!result && !isPending && (
         <div className="flex flex-col items-center py-8 text-center">
           <Shield className="h-10 w-10 text-muted-foreground/20 mb-2" />
@@ -426,20 +410,17 @@ export default function ComparePage() {
     bothDone && saferLabel
       ? Math.abs(resultA.riskScore - resultB.riskScore)
       : 0;
-
   const canDownload = resultA || resultB;
-
-  const handleDownload = () => {
-    window.print();
-  };
 
   return (
     <main className="min-h-screen py-10 px-4 fade-in">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="mb-8 fade-in-up flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold text-lime tracking-widest uppercase mb-2">
+            <p
+              className="text-xs font-semibold tracking-widest uppercase mb-2"
+              style={{ color: NEON_BLUE }}
+            >
               Comparative Analysis
             </p>
             <h1 className="text-3xl font-bold text-foreground mb-2">
@@ -451,17 +432,20 @@ export default function ComparePage() {
           </div>
           {canDownload && (
             <Button
-              onClick={handleDownload}
+              onClick={() => window.print()}
               data-ocid="compare.download_button"
               variant="outline"
-              className="shrink-0 border-lime/30 text-lime hover:bg-lime/10 print-hide"
+              className="shrink-0 print-hide"
+              style={{
+                borderColor: `${NEON_BLUE.replace(")", " / 0.35)")}`,
+                color: NEON_BLUE,
+              }}
             >
               <Download className="h-4 w-4 mr-2" /> Download Report
             </Button>
           )}
         </div>
 
-        {/* Compare Both button */}
         <div
           className="mb-6 flex justify-end fade-in-up"
           style={{ animationDelay: "0.05s" }}
@@ -472,7 +456,12 @@ export default function ComparePage() {
               isPendingA || isPendingB || (!urlA.trim() && !urlB.trim())
             }
             data-ocid="compare.compare_button"
-            className="h-11 px-8 bg-lime text-navy-900 hover:bg-lime/90 font-bold glow-lime"
+            className="h-11 px-8 font-bold"
+            style={{
+              background: NEON_BLUE,
+              color: "oklch(0.08 0.02 250)",
+              boxShadow: `0 0 16px ${NEON_BLUE.replace(")", " / 0.4)")}`,
+            }}
           >
             {isPendingA || isPendingB ? (
               <>
@@ -487,7 +476,6 @@ export default function ComparePage() {
           </Button>
         </div>
 
-        {/* Side-by-side panels */}
         <div
           className="grid md:grid-cols-2 gap-6 fade-in-up"
           style={{ animationDelay: "0.1s" }}
@@ -510,19 +498,17 @@ export default function ComparePage() {
           />
         </div>
 
-        {/* Comparison Summary */}
         {bothDone && (
           <div className="mt-8 space-y-6 fade-in">
-            {/* Winner */}
             <div
               className="glass rounded-2xl p-6"
               data-ocid="compare.summary_panel"
               style={{
                 borderColor: saferLabel
-                  ? "oklch(0.89 0.21 118 / 0.4)"
+                  ? `${NEON_BLUE.replace(")", " / 0.4)")}`
                   : "oklch(0.28 0.04 245)",
                 boxShadow: saferLabel
-                  ? "0 0 24px oklch(0.89 0.21 118 / 0.08)"
+                  ? `0 0 24px ${NEON_BLUE.replace(")", " / 0.08)")}`
                   : undefined,
               }}
             >
@@ -534,22 +520,20 @@ export default function ComparePage() {
                   <span
                     className="h-9 w-9 rounded-xl flex items-center justify-center font-black text-lg"
                     style={{
-                      background: "oklch(0.89 0.21 118 / 0.15)",
-                      color: "oklch(0.89 0.21 118)",
+                      background: `${NEON_BLUE.replace(")", " / 0.15)")}`,
+                      color: NEON_BLUE,
                     }}
                   >
                     {saferLabel}
                   </span>
                   <p className="text-foreground font-semibold">
                     URL {saferLabel} is{" "}
-                    <span style={{ color: "oklch(0.89 0.21 118)" }}>
-                      {safePct}% safer
-                    </span>{" "}
+                    <span style={{ color: NEON_BLUE }}>{safePct}% safer</span>{" "}
                     than URL {saferLabel === "A" ? "B" : "A"}
                   </p>
                   <CheckCircle
                     className="h-5 w-5 ml-auto"
-                    style={{ color: "oklch(0.89 0.21 118)" }}
+                    style={{ color: NEON_BLUE }}
                   />
                 </div>
               ) : (
@@ -558,8 +542,6 @@ export default function ComparePage() {
                 </p>
               )}
             </div>
-
-            {/* Comparison chart */}
             <div className="glass rounded-2xl p-6">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-5">
                 Risk Category Comparison
@@ -593,7 +575,6 @@ export default function ComparePage() {
         )}
       </div>
 
-      {/* Print report (hidden on screen, shown when printing) */}
       <div className="print-report-header" style={{ display: "none" }}>
         <div
           style={{

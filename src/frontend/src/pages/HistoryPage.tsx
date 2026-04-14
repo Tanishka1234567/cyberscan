@@ -12,50 +12,52 @@ import {
 import { ScanType } from "../backend";
 import type { ScanHistoryEntry } from "../backend.d.ts";
 
+const NEON_BLUE = "oklch(0.65 0.22 250)";
+const NEON_PINK = "oklch(0.65 0.20 335)";
+const MAGENTA = "oklch(0.60 0.23 305)";
+const ORANGE = "oklch(0.70 0.18 48)";
+
 function VerdictPill({ verdict }: { verdict: string }) {
   const v = verdict?.toUpperCase() ?? "UNKNOWN";
-  if (v === "SAFE") {
+  if (v === "SAFE")
     return (
       <span
         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
         style={{
-          background: "oklch(0.89 0.21 118 / 0.12)",
-          color: "oklch(0.89 0.21 118)",
-          border: "1px solid oklch(0.89 0.21 118 / 0.3)",
+          background: `${NEON_BLUE.replace(")", " / 0.12)")}`,
+          color: NEON_BLUE,
+          border: `1px solid ${NEON_BLUE.replace(")", " / 0.3)")}`,
         }}
       >
         <CheckCircle className="h-3 w-3" /> {v}
       </span>
     );
-  }
-  if (v === "SUSPICIOUS") {
+  if (v === "SUSPICIOUS")
     return (
       <span
         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
         style={{
-          background: "oklch(0.70 0.18 48 / 0.12)",
-          color: "oklch(0.70 0.18 48)",
-          border: "1px solid oklch(0.70 0.18 48 / 0.3)",
+          background: `${ORANGE.replace(")", " / 0.12)")}`,
+          color: ORANGE,
+          border: `1px solid ${ORANGE.replace(")", " / 0.3)")}`,
         }}
       >
         <AlertTriangle className="h-3 w-3" /> {v}
       </span>
     );
-  }
-  if (v === "DANGEROUS") {
+  if (v === "DANGEROUS")
     return (
       <span
         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
         style={{
-          background: "oklch(0.62 0.22 22 / 0.12)",
-          color: "oklch(0.62 0.22 22)",
-          border: "1px solid oklch(0.62 0.22 22 / 0.3)",
+          background: `${NEON_PINK.replace(")", " / 0.12)")}`,
+          color: NEON_PINK,
+          border: `1px solid ${NEON_PINK.replace(")", " / 0.3)")}`,
         }}
       >
         <XCircle className="h-3 w-3" /> {v}
       </span>
     );
-  }
   return (
     <span
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
@@ -75,9 +77,9 @@ function TypeBadge({ scanType }: { scanType: ScanHistoryEntry["scanType"] }) {
     <span
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
       style={{
-        background: "oklch(0.89 0.21 118 / 0.1)",
-        color: "oklch(0.89 0.21 118)",
-        border: "1px solid oklch(0.89 0.21 118 / 0.25)",
+        background: `${NEON_BLUE.replace(")", " / 0.1)")}`,
+        color: NEON_BLUE,
+        border: `1px solid ${NEON_BLUE.replace(")", " / 0.25)")}`,
       }}
     >
       <Shield className="h-3 w-3" /> URL
@@ -86,9 +88,9 @@ function TypeBadge({ scanType }: { scanType: ScanHistoryEntry["scanType"] }) {
     <span
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
       style={{
-        background: "oklch(0.73 0.16 162 / 0.1)",
-        color: "oklch(0.73 0.16 162)",
-        border: "1px solid oklch(0.73 0.16 162 / 0.25)",
+        background: `${MAGENTA.replace(")", " / 0.1)")}`,
+        color: MAGENTA,
+        border: `1px solid ${MAGENTA.replace(")", " / 0.25)")}`,
       }}
     >
       <Globe className="h-3 w-3" /> DNS
@@ -112,7 +114,10 @@ export default function HistoryPage() {
     <main className="min-h-screen py-10 px-4 fade-in">
       <div className="max-w-5xl mx-auto">
         <div className="mb-10 fade-in-up">
-          <p className="text-xs font-semibold text-lime tracking-widest uppercase mb-2">
+          <p
+            className="text-xs font-semibold tracking-widest uppercase mb-2"
+            style={{ color: NEON_BLUE }}
+          >
             Audit Trail
           </p>
           <h1 className="text-3xl font-bold text-foreground mb-2">
@@ -143,12 +148,9 @@ export default function HistoryPage() {
           <div
             data-ocid="history.error_state"
             className="glass rounded-2xl p-8 flex items-center gap-4"
-            style={{ border: "1px solid oklch(0.62 0.22 22 / 0.3)" }}
+            style={{ border: `1px solid ${NEON_PINK.replace(")", " / 0.3)")}` }}
           >
-            <AlertTriangle
-              className="h-8 w-8"
-              style={{ color: "oklch(0.62 0.22 22)" }}
-            />
+            <AlertTriangle className="h-8 w-8" style={{ color: NEON_PINK }} />
             <div>
               <p className="font-semibold text-foreground">
                 Failed to load history
@@ -161,9 +163,9 @@ export default function HistoryPage() {
         )}
 
         {!isLoading && !isError && history && history.length > 0 && (
-          <div className="glass rounded-2xl overflow-hidden fade-in">
+          <div className="glass rounded-2xl overflow-hidden fade-in border-glow">
             <div className="px-6 py-4 border-b border-border flex items-center gap-3">
-              <Clock className="h-4 w-4 text-lime" />
+              <Clock className="h-4 w-4" style={{ color: NEON_BLUE }} />
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Recent Scans
               </p>
@@ -197,7 +199,7 @@ export default function HistoryPage() {
                     <tr
                       key={`${entry.target}-${i}`}
                       data-ocid={`history.item.${i + 1}`}
-                      className="border-b border-border/50 hover:bg-white/5 transition-colors"
+                      className="border-b border-border/50 hover:bg-primary/5 transition-colors"
                     >
                       <td className="px-6 py-4 font-mono text-xs text-foreground max-w-xs truncate">
                         {entry.target}
@@ -217,10 +219,10 @@ export default function HistoryPage() {
                           style={{
                             color:
                               Number(entry.summary.riskScore) >= 70
-                                ? "oklch(0.62 0.22 22)"
+                                ? NEON_PINK
                                 : Number(entry.summary.riskScore) >= 40
-                                  ? "oklch(0.70 0.18 48)"
-                                  : "oklch(0.89 0.21 118)",
+                                  ? ORANGE
+                                  : NEON_BLUE,
                           }}
                         >
                           {Number(entry.summary.riskScore)}

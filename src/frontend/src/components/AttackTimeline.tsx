@@ -21,9 +21,7 @@ const INCIDENT_TYPES = [
   "Botnet C2 Activity",
   "Cryptojacking",
 ];
-
 const SEVERITIES: IncidentSeverity[] = ["Critical", "High", "Medium", "Low"];
-
 const DESCRIPTIONS = [
   "Multiple engines flagged suspicious outbound traffic patterns.",
   "Domain used in credential harvesting emails targeting enterprise users.",
@@ -47,9 +45,8 @@ function seededRand(seed: number): () => number {
 
 function hashStr(str: string): number {
   let h = 5381;
-  for (let i = 0; i < str.length; i++) {
+  for (let i = 0; i < str.length; i++)
     h = ((h * 33) ^ str.charCodeAt(i)) & 0x7fffffff;
-  }
   return h;
 }
 
@@ -58,54 +55,50 @@ function generateIncidents(target: string): Incident[] {
   const now = new Date();
   const count = 6 + Math.floor(rand() * 3);
   const incidents: Incident[] = [];
-
   for (let i = 0; i < count; i++) {
     const daysBack = Math.floor(rand() * 700) + 10;
     const date = new Date(now);
     date.setDate(date.getDate() - daysBack);
-    const typeIdx = Math.floor(rand() * INCIDENT_TYPES.length);
-    const sevIdx = Math.floor(rand() * SEVERITIES.length);
-    const descIdx = Math.floor(rand() * DESCRIPTIONS.length);
     incidents.push({
       date: date.toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "short",
         year: "numeric",
       }),
-      type: INCIDENT_TYPES[typeIdx],
-      severity: SEVERITIES[sevIdx],
-      description: DESCRIPTIONS[descIdx],
+      type: INCIDENT_TYPES[Math.floor(rand() * INCIDENT_TYPES.length)],
+      severity: SEVERITIES[Math.floor(rand() * SEVERITIES.length)],
+      description: DESCRIPTIONS[Math.floor(rand() * DESCRIPTIONS.length)],
     });
   }
-
   return incidents.sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 }
 
+// Cyberpunk severity config
 const sevConfig: Record<
   IncidentSeverity,
   { color: string; bg: string; border: string }
 > = {
   Critical: {
-    color: "oklch(0.62 0.22 22)",
-    bg: "oklch(0.62 0.22 22 / 0.12)",
-    border: "oklch(0.62 0.22 22 / 0.35)",
+    color: "oklch(0.65 0.20 335)",
+    bg: "oklch(0.65 0.20 335 / 0.12)",
+    border: "oklch(0.65 0.20 335 / 0.35)",
   },
   High: {
+    color: "oklch(0.60 0.23 305)",
+    bg: "oklch(0.60 0.23 305 / 0.12)",
+    border: "oklch(0.60 0.23 305 / 0.35)",
+  },
+  Medium: {
     color: "oklch(0.70 0.18 48)",
     bg: "oklch(0.70 0.18 48 / 0.12)",
     border: "oklch(0.70 0.18 48 / 0.35)",
   },
-  Medium: {
-    color: "oklch(0.83 0.19 95)",
-    bg: "oklch(0.83 0.19 95 / 0.12)",
-    border: "oklch(0.83 0.19 95 / 0.35)",
-  },
   Low: {
-    color: "oklch(0.89 0.21 118)",
-    bg: "oklch(0.89 0.21 118 / 0.12)",
-    border: "oklch(0.89 0.21 118 / 0.35)",
+    color: "oklch(0.65 0.22 250)",
+    bg: "oklch(0.65 0.22 250 / 0.12)",
+    border: "oklch(0.65 0.22 250 / 0.35)",
   },
 };
 
@@ -141,8 +134,9 @@ export default function AttackTimeline({ target }: { target: string }) {
         <span
           className="ml-auto text-xs font-mono px-2 py-0.5 rounded"
           style={{
-            color: "oklch(0.89 0.21 118)",
-            background: "oklch(0.89 0.21 118 / 0.1)",
+            color: "oklch(0.65 0.22 250)",
+            background: "oklch(0.65 0.22 250 / 0.1)",
+            border: "1px solid oklch(0.65 0.22 250 / 0.2)",
           }}
         >
           {target}
@@ -155,10 +149,9 @@ export default function AttackTimeline({ target }: { target: string }) {
             className="absolute left-[7px] top-3 bottom-3 w-px"
             style={{
               background:
-                "linear-gradient(to bottom, oklch(0.89 0.21 118 / 0.8), oklch(0.89 0.21 118 / 0.1))",
+                "linear-gradient(to bottom, oklch(0.65 0.22 250 / 0.8), oklch(0.60 0.23 305 / 0.3), transparent)",
             }}
           />
-
           <div className="space-y-5">
             {incidents.map((incident, i) => {
               const sev = sevConfig[incident.severity];
@@ -179,12 +172,11 @@ export default function AttackTimeline({ target }: { target: string }) {
                       className="h-3.5 w-3.5 rounded-full"
                       style={{
                         background: sev.color,
-                        boxShadow: `0 0 8px ${sev.color}`,
+                        boxShadow: `0 0 10px ${sev.color}`,
                         border: "2px solid oklch(0.17 0.025 245)",
                       }}
                     />
                   </div>
-
                   <div
                     className="flex-1 p-4 rounded-xl border"
                     style={{

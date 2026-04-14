@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CyberScan — System Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #050a10;
+      --navy:      #0a1628;
+      --cyan:      #00e5ff;
+      --magenta:   #f72585;
+      --green:     #00ff9f;
+      --white:     #e8f4ff;
+      --dim:       #4a7a9b;
+      --grid:      rgba(0,229,255,0.04);
+    }
+
+    html, body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', 'Courier New', monospace;
+      gap: 24px;
+      padding: 40px 20px;
+    }
+
+    /* ── Download button ── */
+    #download-btn {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--cyan);
+      background: transparent;
+      border: 1.5px solid var(--cyan);
+      padding: 10px 28px;
+      cursor: pointer;
+      border-radius: 4px;
+      box-shadow: 0 0 12px rgba(0,229,255,0.35), inset 0 0 12px rgba(0,229,255,0.05);
+      transition: box-shadow 0.25s, background 0.25s;
+      position: relative;
+      z-index: 10;
+    }
+    #download-btn:hover {
+      background: rgba(0,229,255,0.08);
+      box-shadow: 0 0 24px rgba(0,229,255,0.6), inset 0 0 20px rgba(0,229,255,0.1);
+    }
+
+    /* ── Diagram wrapper ── */
+    #diagram {
+      position: relative;
+      width: 1200px;
+      height: 900px;
+      background: var(--bg);
+      overflow: hidden;
+      border: 1px solid rgba(0,229,255,0.15);
+      box-shadow: 0 0 60px rgba(0,229,255,0.08);
+      flex-shrink: 0;
+    }
+
+    /* Grid background */
+    #diagram::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Scanlines overlay */
+    #diagram::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0,0,0,0.18) 3px,
+        rgba(0,0,0,0.18) 4px
+      );
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    /* ── All content above grid ── */
+    .diagram-inner {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 36px 60px 28px;
+      gap: 0;
+    }
+
+    /* ── Title ── */
+    .arch-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #fff;
+      text-shadow:
+        0 0 8px var(--cyan),
+        0 0 24px rgba(0,229,255,0.5),
+        0 0 48px rgba(0,229,255,0.2);
+      margin-bottom: 28px;
+      white-space: nowrap;
+    }
+    .arch-title span {
+      color: var(--cyan);
+    }
+
+    /* ── Boxes ── */
+    .box {
+      border-radius: 6px;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Main flow — cyan */
+    .box-main {
+      background: var(--navy);
+      border: 1.5px solid var(--cyan);
+      box-shadow:
+        0 0 10px rgba(0,229,255,0.4),
+        0 0 30px rgba(0,229,255,0.12),
+        inset 0 0 20px rgba(0,229,255,0.04);
+      animation: flickerCyan 4s ease-in-out infinite;
+    }
+    .box-main .label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13.5px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--cyan);
+      text-shadow: 0 0 8px rgba(0,229,255,0.8);
+    }
+    .box-main .sublabel {
+      font-size: 10px;
+      color: rgba(0,229,255,0.55);
+      margin-top: 3px;
+      letter-spacing: 1px;
+    }
+
+    /* API boxes — magenta */
+    .box-api {
+      background: #130820;
+      border: 1.5px solid var(--magenta);
+      box-shadow:
+        0 0 10px rgba(247,37,133,0.4),
+        0 0 28px rgba(247,37,133,0.1),
+        inset 0 0 16px rgba(247,37,133,0.04);
+      animation: flickerMag 5s ease-in-out infinite;
+      padding: 10px 14px;
+    }
+    .box-api .label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--magenta);
+      text-shadow: 0 0 8px rgba(247,37,133,0.8);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .box-api .sublabel {
+      font-size: 9px;
+      color: rgba(247,37,133,0.5);
+      margin-top: 2px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Display boxes — green */
+    .box-display {
+      background: #041810;
+      border: 1.5px solid var(--green);
+      box-shadow:
+        0 0 10px rgba(0,255,159,0.35),
+        0 0 24px rgba(0,255,159,0.1),
+        inset 0 0 14px rgba(0,255,159,0.04);
+      animation: flickerGreen 4.5s ease-in-out infinite;
+      padding: 10px 14px;
+    }
+    .box-display .label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--green);
+      text-shadow: 0 0 8px rgba(0,255,159,0.8);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .box-display .sublabel {
+      font-size: 9px;
+      color: rgba(0,255,159,0.5);
+      margin-top: 2px;
+    }
+
+    /* ── Row layouts ── */
+    .row-single {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+    .row-multi {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      width: 100%;
+    }
+
+    /* Widths for main boxes */
+    .box-user   { width: 340px; }
+    .box-fe     { width: 380px; }
+    .box-be     { width: 420px; }
+    .box-http   { width: 380px; }
+    .box-results { width: 360px; }
+    .box-api    { width: 240px; }
+    .box-display { width: 230px; }
+
+    /* ── Arrows ── */
+    .arrow-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 6px 0;
+    }
+    .arrow-line {
+      width: 2px;
+      height: 28px;
+      background: linear-gradient(to bottom, var(--cyan), rgba(0,229,255,0.3));
+      box-shadow: 0 0 6px var(--cyan), 0 0 12px rgba(0,229,255,0.3);
+      position: relative;
+      animation: flowDown 1.5s linear infinite;
+    }
+    .arrow-head {
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 10px solid var(--cyan);
+      filter: drop-shadow(0 0 4px var(--cyan));
+    }
+
+    /* Arrow from be→api row is wider — handled inline */
+    .arrow-fan {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100%;
+      margin: 4px 0;
+      gap: 0;
+    }
+    /* Individual fan lines */
+    .fan-segment {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .fan-horizontal {
+      height: 2px;
+      background: rgba(0,229,255,0.5);
+      box-shadow: 0 0 4px rgba(0,229,255,0.4);
+    }
+    .fan-vertical {
+      width: 2px;
+      background: linear-gradient(to bottom, rgba(0,229,255,0.5), rgba(0,229,255,0.2));
+      box-shadow: 0 0 4px rgba(0,229,255,0.3);
+      animation: flowDown 1.5s linear infinite;
+    }
+
+    /* Section label */
+    .section-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(0,229,255,0.4);
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    /* ── Watermark ── */
+    .watermark {
+      position: absolute;
+      bottom: 14px;
+      right: 20px;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: rgba(0,229,255,0.2);
+      text-transform: uppercase;
+      z-index: 2;
+    }
+
+    /* ── Corner accents ── */
+    .corner {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      z-index: 2;
+    }
+    .corner-tl { top: 10px; left: 10px; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); }
+    .corner-tr { top: 10px; right: 10px; border-top: 2px solid var(--cyan); border-right: 2px solid var(--cyan); }
+    .corner-bl { bottom: 10px; left: 10px; border-bottom: 2px solid var(--cyan); border-left: 2px solid var(--cyan); }
+    .corner-br { bottom: 10px; right: 10px; border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan); }
+
+    /* ── Animations ── */
+    @keyframes flickerCyan {
+      0%, 94%, 100% { box-shadow: 0 0 10px rgba(0,229,255,0.4), 0 0 30px rgba(0,229,255,0.12), inset 0 0 20px rgba(0,229,255,0.04); }
+      95% { box-shadow: 0 0 14px rgba(0,229,255,0.65), 0 0 40px rgba(0,229,255,0.2), inset 0 0 24px rgba(0,229,255,0.06); }
+      97% { box-shadow: 0 0 8px rgba(0,229,255,0.3), 0 0 20px rgba(0,229,255,0.08), inset 0 0 14px rgba(0,229,255,0.02); }
+    }
+    @keyframes flickerMag {
+      0%, 92%, 100% { box-shadow: 0 0 10px rgba(247,37,133,0.4), 0 0 28px rgba(247,37,133,0.1), inset 0 0 16px rgba(247,37,133,0.04); }
+      93% { box-shadow: 0 0 18px rgba(247,37,133,0.7), 0 0 36px rgba(247,37,133,0.2), inset 0 0 20px rgba(247,37,133,0.06); }
+      96% { box-shadow: 0 0 6px rgba(247,37,133,0.25), 0 0 18px rgba(247,37,133,0.06); }
+    }
+    @keyframes flickerGreen {
+      0%, 90%, 100% { box-shadow: 0 0 10px rgba(0,255,159,0.35), 0 0 24px rgba(0,255,159,0.1), inset 0 0 14px rgba(0,255,159,0.04); }
+      91% { box-shadow: 0 0 16px rgba(0,255,159,0.6), 0 0 32px rgba(0,255,159,0.18); }
+      94% { box-shadow: 0 0 6px rgba(0,255,159,0.2), 0 0 16px rgba(0,255,159,0.06); }
+    }
+    @keyframes flowDown {
+      0%   { opacity: 0.4; }
+      50%  { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    /* ── Glitch line accent ── */
+    .glitch-bar {
+      position: absolute;
+      left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,229,255,0.3), rgba(247,37,133,0.3), transparent);
+      animation: glitchScan 8s linear infinite;
+      z-index: 3;
+      pointer-events: none;
+    }
+    @keyframes glitchScan {
+      0%   { top: -2px; opacity: 0; }
+      5%   { opacity: 1; }
+      95%  { opacity: 1; }
+      100% { top: 902px; opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <button id="download-btn" onclick="downloadDiagram()">⬇ Download as PNG</button>
+
+  <div id="diagram">
+    <!-- Corner accents -->
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <!-- Glitch scan line -->
+    <div class="glitch-bar"></div>
+
+    <div class="diagram-inner">
+
+      <!-- Title -->
+      <div class="arch-title"><span>CyberScan</span> — System Architecture</div>
+
+      <!-- Row 1: User -->
+      <div class="row-single">
+        <div class="box box-main box-user">
+          <div>
+            <div class="label">User (Browser)</div>
+            <div class="sublabel">Any Device &nbsp;·&nbsp; No Installation Required</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Arrow 1 -->
+      <div class="arrow-wrap">
+        <div class="arrow-line"></div>
+        <div class="arrow-head"></div>
+      </div>
+
+      <!-- Row 2: React Frontend -->
+      <div class="row-single">
+        <div class="box box-main box-fe">
+          <div>
+            <div class="label">React Frontend</div>
+            <div class="sublabel">TypeScript &nbsp;+&nbsp; Tailwind CSS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Arrow 2 -->
+      <div class="arrow-wrap">
+        <div class="arrow-line"></div>
+        <div class="arrow-head"></div>
+      </div>
+
+      <!-- Row 3: Motoko Backend -->
+      <div class="row-single">
+        <div class="box box-main box-be">
+          <div>
+            <div class="label">Motoko Backend</div>
+            <div class="sublabel">Internet Computer Blockchain &nbsp;·&nbsp; Decentralized</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fan arrows to API row -->
+      <div style="position:relative; width:100%; height:42px; display:flex; align-items:center; justify-content:center; margin:2px 0;">
+        <svg width="960" height="42" viewBox="0 0 960 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
+          <!-- Center vertical down -->
+          <line x1="480" y1="0" x2="480" y2="42" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.85"/>
+          <!-- Left-far branch to ~120px -->
+          <line x1="480" y1="20" x2="120" y2="20" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="120" y1="20" x2="120" y2="42" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <!-- Left-mid branch to ~300px -->
+          <line x1="480" y1="20" x2="300" y2="20" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="300" y1="20" x2="300" y2="42" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <!-- Right-mid branch to ~660px -->
+          <line x1="480" y1="20" x2="660" y2="20" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="660" y1="20" x2="660" y2="42" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <!-- Right-far branch to ~840px -->
+          <line x1="480" y1="20" x2="840" y2="20" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="840" y1="20" x2="840" y2="42" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <!-- Arrow heads -->
+          <polygon points="480,42 474,34 486,34" fill="#00e5ff" opacity="0.85"/>
+          <polygon points="120,42 114,34 126,34" fill="#00e5ff" opacity="0.6"/>
+          <polygon points="300,42 294,34 306,34" fill="#00e5ff" opacity="0.6"/>
+          <polygon points="660,42 654,34 666,34" fill="#00e5ff" opacity="0.6"/>
+          <polygon points="840,42 834,34 846,34" fill="#00e5ff" opacity="0.6"/>
+          <!-- Glowing filter -->
+          <defs>
+            <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- Row 4: API boxes -->
+      <div class="section-label">HTTP Outcalls — External APIs</div>
+      <div class="row-multi">
+        <div class="box box-api">
+          <div>
+            <div class="label">VirusTotal API</div>
+            <div class="sublabel">Malware Detection</div>
+          </div>
+        </div>
+        <div class="box box-api">
+          <div>
+            <div class="label">Google Safe Browsing</div>
+            <div class="sublabel">Phishing &amp; Malware DB</div>
+          </div>
+        </div>
+        <div class="box box-api">
+          <div>
+            <div class="label">AbuseIPDB API</div>
+            <div class="sublabel">IP Reputation</div>
+          </div>
+        </div>
+        <div class="box box-api">
+          <div>
+            <div class="label">Cloudmersive AI</div>
+            <div class="sublabel">AI Phishing Analysis</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Converging arrows back to single -->
+      <div style="position:relative; width:100%; height:42px; display:flex; align-items:center; justify-content:center; margin:2px 0;">
+        <svg width="960" height="42" viewBox="0 0 960 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
+          <line x1="480" y1="42" x2="480" y2="22" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.85"/>
+          <line x1="120" y1="0" x2="120" y2="22" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="120" y1="22" x2="480" y2="22" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="300" y1="0" x2="300" y2="22" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="300" y1="22" x2="480" y2="22" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="660" y1="0" x2="660" y2="22" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="660" y1="22" x2="480" y2="22" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="840" y1="0" x2="840" y2="22" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <line x1="840" y1="22" x2="480" y2="22" stroke="#00e5ff" stroke-width="2" stroke-opacity="0.6"/>
+          <polygon points="480,42 474,34 486,34" fill="#00e5ff" opacity="0.85"/>
+        </svg>
+      </div>
+
+      <!-- Row 5: Results Processed -->
+      <div class="row-single">
+        <div class="box box-main box-results">
+          <div>
+            <div class="label">Results Processed by Backend</div>
+            <div class="sublabel">Aggregation &nbsp;·&nbsp; Risk Scoring &nbsp;·&nbsp; AI Analysis</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Arrow 5 -->
+      <div class="arrow-wrap">
+        <div class="arrow-line"></div>
+        <div class="arrow-head"></div>
+      </div>
+
+      <!-- Row 6: Frontend Display -->
+      <div class="section-label">Frontend Display</div>
+      <div class="row-multi">
+        <div class="box box-display">
+          <div>
+            <div class="label">Risk Gauge</div>
+          </div>
+        </div>
+        <div class="box box-display">
+          <div>
+            <div class="label">AI Analysis Panel</div>
+          </div>
+        </div>
+        <div class="box box-display">
+          <div>
+            <div class="label">Threat Indicators</div>
+          </div>
+        </div>
+        <div class="box box-display">
+          <div>
+            <div class="label">PDF Report</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.diagram-inner -->
+
+    <!-- Watermark -->
+    <div class="watermark">cyberscan &nbsp;·&nbsp; caffeine.ai</div>
+
+  </div><!-- /#diagram -->
+
+  <script>
+    async function downloadDiagram() {
+      const btn = document.getElementById('download-btn');
+      btn.textContent = '⏳ Rendering…';
+      btn.disabled = true;
+
+      try {
+        const diagram = document.getElementById('diagram');
+        const canvas = await html2canvas(diagram, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#050a10',
+          logging: false,
+          width: 1200,
+          height: 900,
+        });
+
+        const link = document.createElement('a');
+        link.download = 'cyberscan-architecture.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (err) {
+        console.error(err);
+        alert('Download failed. Try right-clicking the diagram and saving as image.');
+      } finally {
+        btn.textContent = '⬇ Download as PNG';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

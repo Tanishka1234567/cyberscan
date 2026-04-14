@@ -73,22 +73,27 @@ export default {
           border: "oklch(var(--sidebar-border))",
           ring: "oklch(var(--sidebar-ring))",
         },
-        lime: {
-          DEFAULT: "oklch(0.89 0.21 118)",
-          dim: "oklch(0.89 0.21 118 / 0.15)",
-          glow: "oklch(0.89 0.21 118 / 0.4)",
+        "neon-blue": {
+          DEFAULT: "oklch(0.65 0.22 250)",
+          dim: "oklch(0.65 0.22 250 / 0.15)",
+          glow: "oklch(0.65 0.22 250 / 0.5)",
         },
-        teal: {
-          DEFAULT: "oklch(0.73 0.16 162)",
-          dim: "oklch(0.73 0.16 162 / 0.15)",
+        magenta: {
+          DEFAULT: "oklch(0.60 0.23 305)",
+          dim: "oklch(0.60 0.23 305 / 0.15)",
         },
-        navy: {
-          900: "oklch(0.12 0.025 245)",
-          800: "oklch(0.15 0.03 245)",
-          700: "oklch(0.17 0.025 245)",
-          600: "oklch(0.20 0.03 245)",
-          500: "oklch(0.22 0.035 245)",
-          400: "oklch(0.28 0.04 245)",
+        "neon-pink": {
+          DEFAULT: "oklch(0.65 0.20 335)",
+          dim: "oklch(0.65 0.20 335 / 0.15)",
+        },
+        cyber: {
+          950: "oklch(0.08 0.02 250)",
+          900: "oklch(0.10 0.03 245)",
+          800: "oklch(0.12 0.03 250)",
+          700: "oklch(0.15 0.05 255)",
+          600: "oklch(0.18 0.06 255)",
+          500: "oklch(0.20 0.03 250)",
+          400: "oklch(0.25 0.08 260)",
         },
       },
       borderRadius: {
@@ -100,10 +105,10 @@ export default {
       },
       boxShadow: {
         xs: "0 1px 2px 0 rgba(0,0,0,0.05)",
-        glass: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
-        lime: "0 0 20px oklch(0.89 0.21 118 / 0.35), 0 0 60px oklch(0.89 0.21 118 / 0.1)",
-        teal: "0 0 20px oklch(0.73 0.16 162 / 0.35)",
-        danger: "0 0 20px oklch(0.62 0.22 22 / 0.35)",
+        glass: "0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(101, 205, 255, 0.1)",
+        "neon-blue": "0 0 20px oklch(0.65 0.22 250 / 0.5), 0 0 40px oklch(0.65 0.22 250 / 0.2)",
+        magenta: "0 0 20px oklch(0.60 0.23 305 / 0.5), 0 0 40px oklch(0.60 0.23 305 / 0.2)",
+        "neon-pink": "0 0 20px oklch(0.65 0.20 335 / 0.5), 0 0 40px oklch(0.65 0.20 335 / 0.2)",
       },
       keyframes: {
         "accordion-down": {
@@ -130,6 +135,30 @@ export default {
           from: { transform: "rotate(0deg)" },
           to: { transform: "rotate(360deg)" },
         },
+        "cyber-pulse": {
+          "0%, 100%": { boxShadow: "0 0 10px oklch(0.65 0.22 250 / 0.3)" },
+          "50%": { boxShadow: "0 0 25px oklch(0.65 0.22 250 / 0.6)" },
+        },
+        "glitch-shift": {
+          "0%": { textShadow: "0 0 20px oklch(0.65 0.22 250 / 0.8)" },
+          "20%": { textShadow: "-2px 0 oklch(0.60 0.23 305 / 0.9), 2px 0 oklch(0.65 0.20 335 / 0.9)" },
+          "40%": { textShadow: "2px 0 oklch(0.60 0.23 305 / 0.9), -2px 0 oklch(0.65 0.20 335 / 0.9)" },
+          "100%": { textShadow: "0 0 20px oklch(0.65 0.22 250 / 0.8)" },
+        },
+        gradientShift: {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
+        },
+        heartbeat: {
+          "0%, 100%": { transform: "scale(1.0)" },
+          "50%": { transform: "scale(1.05)" },
+        },
+        threatFlash: {
+          "0%": { background: "oklch(0.65 0.2 335 / 0.18)", boxShadow: "0 0 20px oklch(0.65 0.2 335 / 0.4)" },
+          "60%": { background: "oklch(0.65 0.2 335 / 0.06)", boxShadow: "0 0 8px oklch(0.65 0.2 335 / 0.1)" },
+          "100%": { background: "transparent", boxShadow: "none" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -138,6 +167,12 @@ export default {
         blink: "blink 1s step-start infinite",
         spin: "spin 1s linear infinite",
         "spin-slow": "spin 3s linear infinite",
+        "cyber-pulse": "cyber-pulse 2s ease-in-out infinite",
+        "glitch-shift": "glitch-shift 3s steps(4) infinite",
+        "gradient-shift": "gradientShift 4s ease infinite",
+        "gradient-shift-slow": "gradientShift 8s ease infinite",
+        heartbeat: "heartbeat 1s ease-in-out infinite",
+        "threat-flash": "threatFlash 0.6s ease-out forwards",
       },
     },
   },

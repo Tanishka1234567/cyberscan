@@ -95,24 +95,39 @@ export interface TransformationOutput {
     headers: Array<http_header>;
 }
 export type Time = bigint;
-export interface ScanHistoryEntry {
-    scanType: ScanType;
-    summary: ResultSummary;
-    target: string;
-    timestamp: Time;
+export interface User {
+    otp?: string;
+    username: string;
+    password: string;
+    otpTimestamp?: Time;
+    email: string;
 }
-export interface TransformationInput {
-    context: Uint8Array;
-    response: http_request_result;
-}
-export interface ResultSummary {
-    threatsFound: Array<string>;
-    recordType: string;
+export interface AiAnalysisResult {
+    explanation: string;
     verdict: string;
-    resolverName: string;
-    recordValue: string;
-    riskScore: bigint;
+    available: boolean;
+    confidence: number;
+    riskLevel: string;
 }
+export type RegistrationResult = {
+    __kind__: "invalidEmailFormat";
+    invalidEmailFormat: null;
+} | {
+    __kind__: "invalidUsernameLength";
+    invalidUsernameLength: null;
+} | {
+    __kind__: "duplicateEmail";
+    duplicateEmail: null;
+} | {
+    __kind__: "duplicateUsername";
+    duplicateUsername: null;
+} | {
+    __kind__: "success";
+    success: string;
+} | {
+    __kind__: "invalidPasswordLength";
+    invalidPasswordLength: null;
+};
 export interface http_header {
     value: string;
     name: string;
@@ -122,50 +137,199 @@ export interface http_request_result {
     body: Uint8Array;
     headers: Array<http_header>;
 }
+export interface ResultSummary {
+    threatsFound: Array<string>;
+    recordType: string;
+    verdict: string;
+    resolverName: string;
+    recordValue: string;
+    riskScore: bigint;
+}
+export interface ScanHistoryEntry {
+    aiAnalysis?: AiAnalysisResult;
+    scanType: ScanType;
+    summary: ResultSummary;
+    target: string;
+    timestamp: Time;
+}
+export interface TransformationInput {
+    context: Uint8Array;
+    response: http_request_result;
+}
+export type PasswordResetResult = {
+    __kind__: "userNotFound";
+    userNotFound: null;
+} | {
+    __kind__: "invalidOtp";
+    invalidOtp: null;
+} | {
+    __kind__: "success";
+    success: string;
+} | {
+    __kind__: "otpExpired";
+    otpExpired: null;
+};
+export type LoginResult = {
+    __kind__: "userNotFound";
+    userNotFound: null;
+} | {
+    __kind__: "wrongPassword";
+    wrongPassword: null;
+} | {
+    __kind__: "success";
+    success: string;
+};
+export type OtpGenerationResult = {
+    __kind__: "userNotFound";
+    userNotFound: null;
+} | {
+    __kind__: "internalError";
+    internalError: null;
+} | {
+    __kind__: "success";
+    success: string;
+};
 export enum ScanType {
+    ip = "ip",
     dns = "dns",
     url = "url"
 }
 export interface backendInterface {
+    allUsers(): Promise<Array<User>>;
+    analyzeWithAI(target: string, scanType: string): Promise<AiAnalysisResult>;
+    authenticateRequest(): Promise<void>;
+    authenticateUser(email: string, password: string): Promise<LoginResult>;
+    createUser(email: string, username: string, password: string): Promise<RegistrationResult>;
     getHistoryEntryByTarget(target: string): Promise<ScanHistoryEntry>;
     getScanHistory(): Promise<Array<ScanHistoryEntry>>;
+    getUsernameByEmail(email: string): Promise<string>;
     lookupDns(domain: string): Promise<string>;
     ping(): Promise<string>;
+    requestPasswordReset(email: string): Promise<OtpGenerationResult>;
+    scanIp(ip: string): Promise<string>;
+    scanPhishing(url: string): Promise<string>;
     scanUrl(url: string): Promise<string>;
+    setAbuseIpDbApiKey(newKey: string): Promise<void>;
+    setAiApiKey(apiKey: string): Promise<boolean>;
     setSafeBrowsingApiKey(newKey: string): Promise<void>;
     setVirusTotalApiKey(newKey: string): Promise<void>;
     setWhoisApiKey(newKey: string): Promise<void>;
     transform(input: TransformationInput): Promise<TransformationOutput>;
+    verifyOtpAndResetPassword(email: string, otp: string, newPassword: string): Promise<PasswordResetResult>;
 }
-import type { ResultSummary as _ResultSummary, ScanHistoryEntry as _ScanHistoryEntry, ScanType as _ScanType, Time as _Time } from "./declarations/backend.did.d.ts";
+import type { AiAnalysisResult as _AiAnalysisResult, LoginResult as _LoginResult, OtpGenerationResult as _OtpGenerationResult, PasswordResetResult as _PasswordResetResult, RegistrationResult as _RegistrationResult, ResultSummary as _ResultSummary, ScanHistoryEntry as _ScanHistoryEntry, ScanType as _ScanType, Time as _Time, User as _User } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async allUsers(): Promise<Array<User>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.allUsers();
+                return from_candid_vec_n1(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.allUsers();
+            return from_candid_vec_n1(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async analyzeWithAI(arg0: string, arg1: string): Promise<AiAnalysisResult> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.analyzeWithAI(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.analyzeWithAI(arg0, arg1);
+            return result;
+        }
+    }
+    async authenticateRequest(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.authenticateRequest();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.authenticateRequest();
+            return result;
+        }
+    }
+    async authenticateUser(arg0: string, arg1: string): Promise<LoginResult> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.authenticateUser(arg0, arg1);
+                return from_candid_LoginResult_n6(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.authenticateUser(arg0, arg1);
+            return from_candid_LoginResult_n6(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async createUser(arg0: string, arg1: string, arg2: string): Promise<RegistrationResult> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createUser(arg0, arg1, arg2);
+                return from_candid_RegistrationResult_n8(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createUser(arg0, arg1, arg2);
+            return from_candid_RegistrationResult_n8(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getHistoryEntryByTarget(arg0: string): Promise<ScanHistoryEntry> {
         if (this.processError) {
             try {
                 const result = await this.actor.getHistoryEntryByTarget(arg0);
-                return from_candid_ScanHistoryEntry_n1(this._uploadFile, this._downloadFile, result);
+                return from_candid_ScanHistoryEntry_n10(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getHistoryEntryByTarget(arg0);
-            return from_candid_ScanHistoryEntry_n1(this._uploadFile, this._downloadFile, result);
+            return from_candid_ScanHistoryEntry_n10(this._uploadFile, this._downloadFile, result);
         }
     }
     async getScanHistory(): Promise<Array<ScanHistoryEntry>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getScanHistory();
-                return from_candid_vec_n5(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n15(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getScanHistory();
-            return from_candid_vec_n5(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n15(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getUsernameByEmail(arg0: string): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getUsernameByEmail(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getUsernameByEmail(arg0);
+            return result;
         }
     }
     async lookupDns(arg0: string): Promise<string> {
@@ -196,6 +360,48 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async requestPasswordReset(arg0: string): Promise<OtpGenerationResult> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.requestPasswordReset(arg0);
+                return from_candid_OtpGenerationResult_n16(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.requestPasswordReset(arg0);
+            return from_candid_OtpGenerationResult_n16(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async scanIp(arg0: string): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.scanIp(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.scanIp(arg0);
+            return result;
+        }
+    }
+    async scanPhishing(arg0: string): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.scanPhishing(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.scanPhishing(arg0);
+            return result;
+        }
+    }
     async scanUrl(arg0: string): Promise<string> {
         if (this.processError) {
             try {
@@ -207,6 +413,34 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.scanUrl(arg0);
+            return result;
+        }
+    }
+    async setAbuseIpDbApiKey(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setAbuseIpDbApiKey(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setAbuseIpDbApiKey(arg0);
+            return result;
+        }
+    }
+    async setAiApiKey(arg0: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setAiApiKey(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setAiApiKey(arg0);
             return result;
         }
     }
@@ -266,40 +500,247 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async verifyOtpAndResetPassword(arg0: string, arg1: string, arg2: string): Promise<PasswordResetResult> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.verifyOtpAndResetPassword(arg0, arg1, arg2);
+                return from_candid_PasswordResetResult_n18(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.verifyOtpAndResetPassword(arg0, arg1, arg2);
+            return from_candid_PasswordResetResult_n18(this._uploadFile, this._downloadFile, result);
+        }
+    }
 }
-function from_candid_ScanHistoryEntry_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ScanHistoryEntry): ScanHistoryEntry {
-    return from_candid_record_n2(_uploadFile, _downloadFile, value);
+function from_candid_LoginResult_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _LoginResult): LoginResult {
+    return from_candid_variant_n7(_uploadFile, _downloadFile, value);
 }
-function from_candid_ScanType_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ScanType): ScanType {
-    return from_candid_variant_n4(_uploadFile, _downloadFile, value);
+function from_candid_OtpGenerationResult_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _OtpGenerationResult): OtpGenerationResult {
+    return from_candid_variant_n17(_uploadFile, _downloadFile, value);
 }
-function from_candid_record_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_PasswordResetResult_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PasswordResetResult): PasswordResetResult {
+    return from_candid_variant_n19(_uploadFile, _downloadFile, value);
+}
+function from_candid_RegistrationResult_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _RegistrationResult): RegistrationResult {
+    return from_candid_variant_n9(_uploadFile, _downloadFile, value);
+}
+function from_candid_ScanHistoryEntry_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ScanHistoryEntry): ScanHistoryEntry {
+    return from_candid_record_n11(_uploadFile, _downloadFile, value);
+}
+function from_candid_ScanType_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ScanType): ScanType {
+    return from_candid_variant_n14(_uploadFile, _downloadFile, value);
+}
+function from_candid_User_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _User): User {
+    return from_candid_record_n3(_uploadFile, _downloadFile, value);
+}
+function from_candid_opt_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_AiAnalysisResult]): AiAnalysisResult | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Time]): Time | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_record_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    aiAnalysis: [] | [_AiAnalysisResult];
     scanType: _ScanType;
     summary: _ResultSummary;
     target: string;
     timestamp: _Time;
 }): {
+    aiAnalysis?: AiAnalysisResult;
     scanType: ScanType;
     summary: ResultSummary;
     target: string;
     timestamp: Time;
 } {
     return {
-        scanType: from_candid_ScanType_n3(_uploadFile, _downloadFile, value.scanType),
+        aiAnalysis: record_opt_to_undefined(from_candid_opt_n12(_uploadFile, _downloadFile, value.aiAnalysis)),
+        scanType: from_candid_ScanType_n13(_uploadFile, _downloadFile, value.scanType),
         summary: value.summary,
         target: value.target,
         timestamp: value.timestamp
     };
 }
-function from_candid_variant_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    otp: [] | [string];
+    username: string;
+    password: string;
+    otpTimestamp: [] | [_Time];
+    email: string;
+}): {
+    otp?: string;
+    username: string;
+    password: string;
+    otpTimestamp?: Time;
+    email: string;
+} {
+    return {
+        otp: record_opt_to_undefined(from_candid_opt_n4(_uploadFile, _downloadFile, value.otp)),
+        username: value.username,
+        password: value.password,
+        otpTimestamp: record_opt_to_undefined(from_candid_opt_n5(_uploadFile, _downloadFile, value.otpTimestamp)),
+        email: value.email
+    };
+}
+function from_candid_variant_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    ip: null;
+} | {
     dns: null;
 } | {
     url: null;
 }): ScanType {
-    return "dns" in value ? ScanType.dns : "url" in value ? ScanType.url : value;
+    return "ip" in value ? ScanType.ip : "dns" in value ? ScanType.dns : "url" in value ? ScanType.url : value;
 }
-function from_candid_vec_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ScanHistoryEntry>): Array<ScanHistoryEntry> {
-    return value.map((x)=>from_candid_ScanHistoryEntry_n1(_uploadFile, _downloadFile, x));
+function from_candid_variant_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    userNotFound: null;
+} | {
+    internalError: null;
+} | {
+    success: string;
+}): {
+    __kind__: "userNotFound";
+    userNotFound: null;
+} | {
+    __kind__: "internalError";
+    internalError: null;
+} | {
+    __kind__: "success";
+    success: string;
+} {
+    return "userNotFound" in value ? {
+        __kind__: "userNotFound",
+        userNotFound: value.userNotFound
+    } : "internalError" in value ? {
+        __kind__: "internalError",
+        internalError: value.internalError
+    } : "success" in value ? {
+        __kind__: "success",
+        success: value.success
+    } : value;
+}
+function from_candid_variant_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    userNotFound: null;
+} | {
+    invalidOtp: null;
+} | {
+    success: string;
+} | {
+    otpExpired: null;
+}): {
+    __kind__: "userNotFound";
+    userNotFound: null;
+} | {
+    __kind__: "invalidOtp";
+    invalidOtp: null;
+} | {
+    __kind__: "success";
+    success: string;
+} | {
+    __kind__: "otpExpired";
+    otpExpired: null;
+} {
+    return "userNotFound" in value ? {
+        __kind__: "userNotFound",
+        userNotFound: value.userNotFound
+    } : "invalidOtp" in value ? {
+        __kind__: "invalidOtp",
+        invalidOtp: value.invalidOtp
+    } : "success" in value ? {
+        __kind__: "success",
+        success: value.success
+    } : "otpExpired" in value ? {
+        __kind__: "otpExpired",
+        otpExpired: value.otpExpired
+    } : value;
+}
+function from_candid_variant_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    userNotFound: null;
+} | {
+    wrongPassword: null;
+} | {
+    success: string;
+}): {
+    __kind__: "userNotFound";
+    userNotFound: null;
+} | {
+    __kind__: "wrongPassword";
+    wrongPassword: null;
+} | {
+    __kind__: "success";
+    success: string;
+} {
+    return "userNotFound" in value ? {
+        __kind__: "userNotFound",
+        userNotFound: value.userNotFound
+    } : "wrongPassword" in value ? {
+        __kind__: "wrongPassword",
+        wrongPassword: value.wrongPassword
+    } : "success" in value ? {
+        __kind__: "success",
+        success: value.success
+    } : value;
+}
+function from_candid_variant_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    invalidEmailFormat: null;
+} | {
+    invalidUsernameLength: null;
+} | {
+    duplicateEmail: null;
+} | {
+    duplicateUsername: null;
+} | {
+    success: string;
+} | {
+    invalidPasswordLength: null;
+}): {
+    __kind__: "invalidEmailFormat";
+    invalidEmailFormat: null;
+} | {
+    __kind__: "invalidUsernameLength";
+    invalidUsernameLength: null;
+} | {
+    __kind__: "duplicateEmail";
+    duplicateEmail: null;
+} | {
+    __kind__: "duplicateUsername";
+    duplicateUsername: null;
+} | {
+    __kind__: "success";
+    success: string;
+} | {
+    __kind__: "invalidPasswordLength";
+    invalidPasswordLength: null;
+} {
+    return "invalidEmailFormat" in value ? {
+        __kind__: "invalidEmailFormat",
+        invalidEmailFormat: value.invalidEmailFormat
+    } : "invalidUsernameLength" in value ? {
+        __kind__: "invalidUsernameLength",
+        invalidUsernameLength: value.invalidUsernameLength
+    } : "duplicateEmail" in value ? {
+        __kind__: "duplicateEmail",
+        duplicateEmail: value.duplicateEmail
+    } : "duplicateUsername" in value ? {
+        __kind__: "duplicateUsername",
+        duplicateUsername: value.duplicateUsername
+    } : "success" in value ? {
+        __kind__: "success",
+        success: value.success
+    } : "invalidPasswordLength" in value ? {
+        __kind__: "invalidPasswordLength",
+        invalidPasswordLength: value.invalidPasswordLength
+    } : value;
+}
+function from_candid_vec_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_User>): Array<User> {
+    return value.map((x)=>from_candid_User_n2(_uploadFile, _downloadFile, x));
+}
+function from_candid_vec_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ScanHistoryEntry>): Array<ScanHistoryEntry> {
+    return value.map((x)=>from_candid_ScanHistoryEntry_n10(_uploadFile, _downloadFile, x));
 }
 export interface CreateActorOptions {
     agent?: Agent;

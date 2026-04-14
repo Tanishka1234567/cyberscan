@@ -1,0 +1,72 @@
+// Version: 1.0.0
+type AiAnalysisResult__984458586 =
+  {
+    available : Bool;
+    confidence : Float;
+    explanation : Text;
+    riskLevel : Text;
+    verdict : Text
+  };
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type Int__270357528 = Int__616954475;
+type Int__616954475 = Int;
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type ResultSummary__1003747753 =
+  {
+    recordType : Text;
+    recordValue : Text;
+    resolverName : Text;
+    riskScore : Nat;
+    threatsFound : [Text];
+    verdict : Text
+  };
+type ScanHistoryEntry__160994698 =
+  {
+    aiAnalysis : ?AiAnalysisResult__984458586;
+    scanType : ScanType__620711090;
+    summary : ResultSummary__1003747753;
+    target : Text;
+    timestamp : Time__900049286
+  };
+type ScanType__620711090 = {#dns; #ip; #url};
+type Time__796480547 = Int__270357528;
+type Time__900049286 = Time__796480547;
+type User__831686142 =
+  {
+    email : Text;
+    otp : ?Text;
+    otpTimestamp : ?Time__900049286;
+    password : Text;
+    username : Text
+  };
+actor {
+  stable _userRequestCount :
+    {var root : Node__46230540<Principal, Nat>; var size : Nat__490723111};
+  stable var abuseIpDbApiKey : Text;
+  stable var aiApiKey : Text;
+  stable var nextOtp : Int;
+  stable var safeBrowsingApiKey : Text;
+  stable scanHistory :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?ScanHistoryEntry__160994698]];
+      var elementIndex : Nat__490723111
+    };
+  stable var stableNextOtp : Int;
+  stable var stableScanHistory : [ScanHistoryEntry__160994698];
+  stable var stableUsers : [(Text, User__831686142)];
+  stable users :
+    {
+      var root : Node__46230540<Text, User__831686142>;
+      var size : Nat__490723111
+    };
+  stable var virusTotalApiKey : Text;
+  stable var whoisApiKey : Text
+};

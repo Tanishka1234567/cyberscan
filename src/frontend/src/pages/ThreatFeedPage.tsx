@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 type Severity = "Critical" | "High" | "Medium";
 type ThreatType =
@@ -20,6 +20,12 @@ interface ThreatEntry {
   flag: string;
   minutesAgo: number;
 }
+
+const NEON_BLUE = "oklch(0.65 0.22 250)";
+const NEON_PINK = "oklch(0.65 0.20 335)";
+const MAGENTA = "oklch(0.60 0.23 305)";
+const ORANGE = "oklch(0.70 0.18 48)";
+const CYAN = "oklch(0.72 0.15 210)";
 
 const THREAT_DATA: Omit<ThreatEntry, "id" | "minutesAgo">[] = [
   {
@@ -253,60 +259,57 @@ const severityConfig: Record<
   { color: string; bg: string; border: string; label: string }
 > = {
   Critical: {
-    color: "oklch(0.62 0.22 22)",
-    bg: "oklch(0.62 0.22 22 / 0.12)",
-    border: "oklch(0.62 0.22 22 / 0.35)",
+    color: NEON_PINK,
+    bg: `${NEON_PINK.replace(")", " / 0.12)")}`,
+    border: `${NEON_PINK.replace(")", " / 0.35)")}`,
     label: "CRITICAL",
   },
   High: {
-    color: "oklch(0.70 0.18 48)",
-    bg: "oklch(0.70 0.18 48 / 0.12)",
-    border: "oklch(0.70 0.18 48 / 0.35)",
+    color: MAGENTA,
+    bg: `${MAGENTA.replace(")", " / 0.12)")}`,
+    border: `${MAGENTA.replace(")", " / 0.35)")}`,
     label: "HIGH",
   },
   Medium: {
-    color: "oklch(0.83 0.19 95)",
-    bg: "oklch(0.83 0.19 95 / 0.12)",
-    border: "oklch(0.83 0.19 95 / 0.35)",
+    color: NEON_BLUE,
+    bg: `${NEON_BLUE.replace(")", " / 0.12)")}`,
+    border: `${NEON_BLUE.replace(")", " / 0.35)")}`,
     label: "MEDIUM",
   },
 };
 
 const typeColors: Record<ThreatType, string> = {
-  Malware: "oklch(0.62 0.22 22)",
-  Phishing: "oklch(0.70 0.18 48)",
-  DDoS: "oklch(0.65 0.15 290)",
-  Ransomware: "oklch(0.60 0.20 15)",
-  Botnet: "oklch(0.62 0.13 265)",
-  SQLi: "oklch(0.68 0.14 200)",
-  "Zero-Day": "oklch(0.62 0.22 22)",
-  "Brute Force": "oklch(0.73 0.16 162)",
+  Malware: NEON_PINK,
+  Phishing: ORANGE,
+  DDoS: MAGENTA,
+  Ransomware: NEON_PINK,
+  Botnet: NEON_BLUE,
+  SQLi: CYAN,
+  "Zero-Day": NEON_PINK,
+  "Brute Force": MAGENTA,
 };
 
 function buildEntries(): ThreatEntry[] {
-  return THREAT_DATA.map((d, i) => ({
-    ...d,
-    id: i,
-    minutesAgo: i * 2 + 1,
-  }));
+  return THREAT_DATA.map((d, i) => ({ ...d, id: i, minutesAgo: i * 2 + 1 }));
 }
 
 function formatTime(minutesAgo: number): string {
   if (minutesAgo < 60) return `${minutesAgo} min ago`;
-  const h = Math.floor(minutesAgo / 60);
-  return `${h}h ago`;
+  return `${Math.floor(minutesAgo / 60)}h ago`;
 }
 
 export default function ThreatFeedPage() {
   const [entries, setEntries] = useState<ThreatEntry[]>(buildEntries);
-  const [totalToday, setTotalToday] = useState(1247);
-  const [newFlash, setNewFlash] = useState<number | null>(null);
-  const tickerRef = useRef<HTMLDivElement>(null);
+  const [newFlashId, setNewFlashId] = useState<number | null>(null);
+  const [showTypewriter, setShowTypewriter] = useState(false);
 
-  // Increment counter and rotate entries every 4s
+  useEffect(() => {
+    const t = setTimeout(() => setShowTypewriter(true), 300);
+    return () => clearTimeout(t);
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setTotalToday((n) => n + Math.floor(Math.random() * 3) + 1);
       setEntries((prev) => {
         const copy = [...prev];
         const last = copy.pop()!;
@@ -319,181 +322,192 @@ export default function ThreatFeedPage() {
           ...e,
           minutesAgo: i === 0 ? 1 : e.minutesAgo + 1,
         }));
-        setNewFlash(updated[0].id);
-        setTimeout(() => setNewFlash(null), 800);
+        setNewFlashId(updated[0].id);
+        setTimeout(() => setNewFlashId(null), 800);
         return updated;
       });
     }, 4000);
     return () => clearInterval(interval);
   }, []);
 
-  const displayEntries = [...entries, ...entries]; // duplicate for seamless loop
+  const displayEntries = [...entries, ...entries];
 
   return (
     <main className="min-h-screen py-10 px-4 fade-in">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-8 fade-in-up">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3 mb-3">
             <span className="text-xs font-semibold text-muted-foreground tracking-widest uppercase">
               Global Intelligence
             </span>
           </div>
-          <div className="flex items-center gap-4">
+
+          <div className="flex flex-wrap items-center gap-5 mb-3">
             <h1 className="text-3xl font-bold text-foreground">
               Live Threat Feed
             </h1>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass border border-red-500/30">
+
+            {/* Enhanced LIVE badge */}
+            <div className="relative flex items-center">
+              {/* Triple pulse rings */}
               <span
-                className="h-2.5 w-2.5 rounded-full"
+                className="absolute rounded-full"
                 style={{
-                  background: "oklch(0.62 0.22 22)",
-                  boxShadow: "0 0 8px oklch(0.62 0.22 22)",
-                  animation: "pulse 1s ease-in-out infinite",
+                  inset: "-10px",
+                  border: "1.5px solid oklch(0.65 0.20 335 / 0.5)",
+                  animation: "pulseRing 1.8s ease-out infinite",
                 }}
               />
               <span
-                className="text-xs font-bold tracking-widest"
-                style={{ color: "oklch(0.62 0.22 22)" }}
+                className="absolute rounded-full"
+                style={{
+                  inset: "-18px",
+                  border: "1px solid oklch(0.65 0.20 335 / 0.3)",
+                  animation: "pulseRing 1.8s ease-out 0.4s infinite",
+                }}
+              />
+              <span
+                className="absolute rounded-full"
+                style={{
+                  inset: "-26px",
+                  border: "1px solid oklch(0.65 0.20 335 / 0.15)",
+                  animation: "pulseRing 1.8s ease-out 0.8s infinite",
+                }}
+              />
+
+              {/* Badge */}
+              <div
+                className="relative flex items-center gap-2 px-4 py-2 rounded-full"
+                style={{
+                  background: "oklch(0.65 0.20 335 / 0.12)",
+                  border: "1.5px solid oklch(0.65 0.20 335 / 0.6)",
+                  boxShadow:
+                    "0 0 20px oklch(0.65 0.20 335 / 0.3), inset 0 0 12px oklch(0.65 0.20 335 / 0.05)",
+                }}
+                data-ocid="threat-feed.live-badge"
               >
-                LIVE
-              </span>
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{
+                    background: "oklch(0.65 0.20 335)",
+                    boxShadow: "0 0 10px oklch(0.65 0.20 335 / 0.9)",
+                    animation: "pulse 1s ease-in-out infinite",
+                  }}
+                />
+                <span
+                  className="text-sm font-black tracking-widest live-heartbeat"
+                  style={{
+                    color: "oklch(0.65 0.20 335)",
+                    textShadow: "0 0 12px oklch(0.65 0.20 335 / 0.8)",
+                  }}
+                >
+                  LIVE
+                </span>
+              </div>
             </div>
           </div>
+
+          {/* Typewriter subtitle */}
+          <div className="h-6 overflow-hidden">
+            {showTypewriter && (
+              <p
+                className="text-sm font-mono tracking-widest uppercase"
+                style={{
+                  color: "oklch(0.65 0.22 250 / 0.7)",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  borderRight: "2px solid oklch(0.65 0.22 250 / 0.7)",
+                  width: "0",
+                  animation:
+                    "typewriterIn 2.5s steps(35, end) 0.1s forwards, cursorBlink 0.6s step-start 0.1s 6",
+                }}
+              >
+                ⚡ SCANNING GLOBAL THREATS IN REAL-TIME...
+              </p>
+            )}
+          </div>
+
           <p className="text-muted-foreground mt-2">
             Real-time global cyber threat intelligence. Data refreshes every 4
             seconds.
           </p>
         </div>
 
-        {/* Stats Bar */}
+        {/* Threat Ticker — animated border */}
         <div
-          className="grid grid-cols-3 gap-4 mb-8 fade-in-up"
-          style={{ animationDelay: "0.1s" }}
+          className="fade-in-up ticker-border-wrap"
+          style={{ animationDelay: "0.2s" }}
+          data-ocid="threat-feed.ticker-container"
         >
-          {[
-            {
-              label: "Threats Today",
-              value: totalToday.toLocaleString(),
-              color: "oklch(0.62 0.22 22)",
-              icon: "🚨",
-            },
-            {
-              label: "Active Botnets",
-              value: "847",
-              color: "oklch(0.70 0.18 48)",
-              icon: "🤖",
-            },
-            {
-              label: "Countries Affected",
-              value: "134",
-              color: "oklch(0.89 0.21 118)",
-              icon: "🌍",
-            },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="glass rounded-2xl p-5 flex flex-col gap-1"
-              style={{ borderColor: `${stat.color.replace(")", " / 0.2)")}` }}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{stat.icon}</span>
-                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                  {stat.label}
-                </span>
-              </div>
-              <span
-                className="text-2xl font-black font-mono"
-                style={{
-                  color: stat.color,
-                  textShadow: `0 0 20px ${stat.color.replace(")", " / 0.5)")}`,
-                }}
-              >
-                {stat.value}
+          <div
+            className="glass rounded-2xl overflow-hidden"
+            style={{ height: "640px" }}
+          >
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Threat Event Log
+              </p>
+              <span className="text-xs text-muted-foreground">
+                Hover to pause
               </span>
             </div>
-          ))}
-        </div>
-
-        {/* Threat Ticker */}
-        <div
-          className="glass rounded-2xl overflow-hidden fade-in-up"
-          style={{ animationDelay: "0.2s", height: "640px" }}
-        >
-          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Threat Event Log
-            </p>
-            <span className="text-xs text-muted-foreground">
-              Hover to pause
-            </span>
-          </div>
-
-          <div
-            className="overflow-hidden"
-            style={{ height: "calc(100% - 57px)" }}
-          >
-            <div ref={tickerRef} className="threat-ticker">
-              {displayEntries.map((entry, idx) => {
-                const sev = severityConfig[entry.severity];
-                const typeColor = typeColors[entry.type];
-                const isNew = entry.id === newFlash && idx < entries.length;
-                return (
-                  <div
-                    key={`${entry.id}-${idx}`}
-                    className="flex items-center gap-4 px-6 py-3 border-b border-border/40 hover:bg-white/5 transition-colors"
-                    style={{
-                      background: isNew
-                        ? "oklch(0.62 0.22 22 / 0.08)"
-                        : undefined,
-                      transition: "background 0.8s ease",
-                    }}
-                  >
-                    {/* Type badge */}
-                    <span
-                      className="shrink-0 text-xs font-bold px-2.5 py-1 rounded font-mono w-24 text-center"
+            <div
+              className="overflow-hidden"
+              style={{ height: "calc(100% - 57px)" }}
+            >
+              <div className="threat-ticker">
+                {displayEntries.map((entry, idx) => {
+                  const sev = severityConfig[entry.severity];
+                  const typeColor = typeColors[entry.type];
+                  const isNew = entry.id === newFlashId && idx < entries.length;
+                  return (
+                    <div
+                      key={`${entry.id}-${idx}`}
+                      className={`flex items-center gap-4 px-6 py-3 border-b border-border/40 hover:bg-primary/5 transition-colors${isNew ? " threat-flash-in" : ""}`}
                       style={{
-                        color: typeColor,
-                        background: `${typeColor.replace(")", " / 0.12)")}`,
-                        border: `1px solid ${typeColor.replace(")", " / 0.3)")}`,
+                        transition: isNew ? undefined : "background 0.8s ease",
                       }}
                     >
-                      {entry.type}
-                    </span>
-
-                    {/* Source */}
-                    <span
-                      className="font-mono text-sm text-foreground truncate flex-1"
-                      style={{ minWidth: 0 }}
-                    >
-                      {entry.source}
-                    </span>
-
-                    {/* Severity */}
-                    <span
-                      className="shrink-0 text-xs font-black px-2.5 py-1 rounded-full tracking-widest"
-                      style={{
-                        color: sev.color,
-                        background: sev.bg,
-                        border: `1px solid ${sev.border}`,
-                      }}
-                    >
-                      {sev.label}
-                    </span>
-
-                    {/* Country */}
-                    <span className="shrink-0 text-sm text-muted-foreground hidden sm:flex items-center gap-1.5">
-                      <span>{entry.flag}</span>
-                      <span className="hidden md:inline">{entry.country}</span>
-                    </span>
-
-                    {/* Time */}
-                    <span className="shrink-0 text-xs text-muted-foreground font-mono w-16 text-right">
-                      {formatTime(entry.minutesAgo)}
-                    </span>
-                  </div>
-                );
-              })}
+                      <span
+                        className="shrink-0 text-xs font-bold px-2.5 py-1 rounded font-mono w-24 text-center"
+                        style={{
+                          color: typeColor,
+                          background: `${typeColor.replace(")", " / 0.12)")}`,
+                          border: `1px solid ${typeColor.replace(")", " / 0.3)")}`,
+                        }}
+                      >
+                        {entry.type}
+                      </span>
+                      <span
+                        className="font-mono text-sm text-foreground truncate flex-1"
+                        style={{ minWidth: 0 }}
+                      >
+                        {entry.source}
+                      </span>
+                      <span
+                        className="shrink-0 text-xs font-black px-2.5 py-1 rounded-full tracking-widest"
+                        style={{
+                          color: sev.color,
+                          background: sev.bg,
+                          border: `1px solid ${sev.border}`,
+                        }}
+                      >
+                        {sev.label}
+                      </span>
+                      <span className="shrink-0 text-sm text-muted-foreground hidden sm:flex items-center gap-1.5">
+                        <span>{entry.flag}</span>
+                        <span className="hidden md:inline">
+                          {entry.country}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-xs text-muted-foreground font-mono w-16 text-right">
+                        {formatTime(entry.minutesAgo)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

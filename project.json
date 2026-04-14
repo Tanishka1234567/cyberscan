@@ -1,0 +1,27 @@
+{
+  "overview": "CyberScan is an AI-powered cybersecurity web application that combines threat intelligence APIs with AI-based phishing detection. It provides URL scanning, IP reputation analysis, DNS/WHOIS lookup, and now uses Cloudmersive AI to analyze threats with confidence scores and categorical risk levels.",
+  "features": [
+    "AI-based phishing detection with confidence scores (0-100%)",
+    "Categorical risk levels: Low/Medium/High/Critical",
+    "URL Scanner with VirusTotal, Google Safe Browsing + AI analysis",
+    "IP Scanner with AbuseIPDB + AI reputation analysis",
+    "DNS/WHOIS lookup with suspicious domain flagging",
+    "Scan history with AI results stored per user",
+    "PDF report export with AI analysis section",
+    "User authentication with OTP-based password reset",
+    "Live threat feed and attack timeline",
+    "Side-by-side URL comparison"
+  ],
+  "category": "security",
+  "tags": [
+    "cybersecurity",
+    "ai",
+    "phishing-detection",
+    "url-scanner",
+    "threat-intelligence",
+    "react",
+    "motoko",
+    "blockchain"
+  ],
+  "last_updated": "2026-04-10T04:35:32.078Z"
+}

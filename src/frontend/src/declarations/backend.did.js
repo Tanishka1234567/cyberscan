@@ -8,7 +8,39 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
-export const ScanType = IDL.Variant({ 'dns' : IDL.Null, 'url' : IDL.Null });
+export const Time = IDL.Int;
+export const User = IDL.Record({
+  'otp' : IDL.Opt(IDL.Text),
+  'username' : IDL.Text,
+  'password' : IDL.Text,
+  'otpTimestamp' : IDL.Opt(Time),
+  'email' : IDL.Text,
+});
+export const AiAnalysisResult = IDL.Record({
+  'explanation' : IDL.Text,
+  'verdict' : IDL.Text,
+  'available' : IDL.Bool,
+  'confidence' : IDL.Float64,
+  'riskLevel' : IDL.Text,
+});
+export const LoginResult = IDL.Variant({
+  'userNotFound' : IDL.Null,
+  'wrongPassword' : IDL.Null,
+  'success' : IDL.Text,
+});
+export const RegistrationResult = IDL.Variant({
+  'invalidEmailFormat' : IDL.Null,
+  'invalidUsernameLength' : IDL.Null,
+  'duplicateEmail' : IDL.Null,
+  'duplicateUsername' : IDL.Null,
+  'success' : IDL.Text,
+  'invalidPasswordLength' : IDL.Null,
+});
+export const ScanType = IDL.Variant({
+  'ip' : IDL.Null,
+  'dns' : IDL.Null,
+  'url' : IDL.Null,
+});
 export const ResultSummary = IDL.Record({
   'threatsFound' : IDL.Vec(IDL.Text),
   'recordType' : IDL.Text,
@@ -17,12 +49,17 @@ export const ResultSummary = IDL.Record({
   'recordValue' : IDL.Text,
   'riskScore' : IDL.Nat,
 });
-export const Time = IDL.Int;
 export const ScanHistoryEntry = IDL.Record({
+  'aiAnalysis' : IDL.Opt(AiAnalysisResult),
   'scanType' : ScanType,
   'summary' : ResultSummary,
   'target' : IDL.Text,
   'timestamp' : Time,
+});
+export const OtpGenerationResult = IDL.Variant({
+  'userNotFound' : IDL.Null,
+  'internalError' : IDL.Null,
+  'success' : IDL.Text,
 });
 export const http_header = IDL.Record({
   'value' : IDL.Text,
@@ -42,13 +79,34 @@ export const TransformationOutput = IDL.Record({
   'body' : IDL.Vec(IDL.Nat8),
   'headers' : IDL.Vec(http_header),
 });
+export const PasswordResetResult = IDL.Variant({
+  'userNotFound' : IDL.Null,
+  'invalidOtp' : IDL.Null,
+  'success' : IDL.Text,
+  'otpExpired' : IDL.Null,
+});
 
 export const idlService = IDL.Service({
+  'allUsers' : IDL.Func([], [IDL.Vec(User)], ['query']),
+  'analyzeWithAI' : IDL.Func([IDL.Text, IDL.Text], [AiAnalysisResult], []),
+  'authenticateRequest' : IDL.Func([], [], ['query']),
+  'authenticateUser' : IDL.Func([IDL.Text, IDL.Text], [LoginResult], []),
+  'createUser' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text],
+      [RegistrationResult],
+      [],
+    ),
   'getHistoryEntryByTarget' : IDL.Func([IDL.Text], [ScanHistoryEntry], []),
   'getScanHistory' : IDL.Func([], [IDL.Vec(ScanHistoryEntry)], []),
+  'getUsernameByEmail' : IDL.Func([IDL.Text], [IDL.Text], []),
   'lookupDns' : IDL.Func([IDL.Text], [IDL.Text], []),
   'ping' : IDL.Func([], [IDL.Text], ['query']),
+  'requestPasswordReset' : IDL.Func([IDL.Text], [OtpGenerationResult], []),
+  'scanIp' : IDL.Func([IDL.Text], [IDL.Text], []),
+  'scanPhishing' : IDL.Func([IDL.Text], [IDL.Text], []),
   'scanUrl' : IDL.Func([IDL.Text], [IDL.Text], []),
+  'setAbuseIpDbApiKey' : IDL.Func([IDL.Text], [], []),
+  'setAiApiKey' : IDL.Func([IDL.Text], [IDL.Bool], []),
   'setSafeBrowsingApiKey' : IDL.Func([IDL.Text], [], []),
   'setVirusTotalApiKey' : IDL.Func([IDL.Text], [], []),
   'setWhoisApiKey' : IDL.Func([IDL.Text], [], []),
@@ -57,12 +115,49 @@ export const idlService = IDL.Service({
       [TransformationOutput],
       ['query'],
     ),
+  'verifyOtpAndResetPassword' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text],
+      [PasswordResetResult],
+      [],
+    ),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
-  const ScanType = IDL.Variant({ 'dns' : IDL.Null, 'url' : IDL.Null });
+  const Time = IDL.Int;
+  const User = IDL.Record({
+    'otp' : IDL.Opt(IDL.Text),
+    'username' : IDL.Text,
+    'password' : IDL.Text,
+    'otpTimestamp' : IDL.Opt(Time),
+    'email' : IDL.Text,
+  });
+  const AiAnalysisResult = IDL.Record({
+    'explanation' : IDL.Text,
+    'verdict' : IDL.Text,
+    'available' : IDL.Bool,
+    'confidence' : IDL.Float64,
+    'riskLevel' : IDL.Text,
+  });
+  const LoginResult = IDL.Variant({
+    'userNotFound' : IDL.Null,
+    'wrongPassword' : IDL.Null,
+    'success' : IDL.Text,
+  });
+  const RegistrationResult = IDL.Variant({
+    'invalidEmailFormat' : IDL.Null,
+    'invalidUsernameLength' : IDL.Null,
+    'duplicateEmail' : IDL.Null,
+    'duplicateUsername' : IDL.Null,
+    'success' : IDL.Text,
+    'invalidPasswordLength' : IDL.Null,
+  });
+  const ScanType = IDL.Variant({
+    'ip' : IDL.Null,
+    'dns' : IDL.Null,
+    'url' : IDL.Null,
+  });
   const ResultSummary = IDL.Record({
     'threatsFound' : IDL.Vec(IDL.Text),
     'recordType' : IDL.Text,
@@ -71,12 +166,17 @@ export const idlFactory = ({ IDL }) => {
     'recordValue' : IDL.Text,
     'riskScore' : IDL.Nat,
   });
-  const Time = IDL.Int;
   const ScanHistoryEntry = IDL.Record({
+    'aiAnalysis' : IDL.Opt(AiAnalysisResult),
     'scanType' : ScanType,
     'summary' : ResultSummary,
     'target' : IDL.Text,
     'timestamp' : Time,
+  });
+  const OtpGenerationResult = IDL.Variant({
+    'userNotFound' : IDL.Null,
+    'internalError' : IDL.Null,
+    'success' : IDL.Text,
   });
   const http_header = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
   const http_request_result = IDL.Record({
@@ -93,13 +193,34 @@ export const idlFactory = ({ IDL }) => {
     'body' : IDL.Vec(IDL.Nat8),
     'headers' : IDL.Vec(http_header),
   });
+  const PasswordResetResult = IDL.Variant({
+    'userNotFound' : IDL.Null,
+    'invalidOtp' : IDL.Null,
+    'success' : IDL.Text,
+    'otpExpired' : IDL.Null,
+  });
   
   return IDL.Service({
+    'allUsers' : IDL.Func([], [IDL.Vec(User)], ['query']),
+    'analyzeWithAI' : IDL.Func([IDL.Text, IDL.Text], [AiAnalysisResult], []),
+    'authenticateRequest' : IDL.Func([], [], ['query']),
+    'authenticateUser' : IDL.Func([IDL.Text, IDL.Text], [LoginResult], []),
+    'createUser' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [RegistrationResult],
+        [],
+      ),
     'getHistoryEntryByTarget' : IDL.Func([IDL.Text], [ScanHistoryEntry], []),
     'getScanHistory' : IDL.Func([], [IDL.Vec(ScanHistoryEntry)], []),
+    'getUsernameByEmail' : IDL.Func([IDL.Text], [IDL.Text], []),
     'lookupDns' : IDL.Func([IDL.Text], [IDL.Text], []),
     'ping' : IDL.Func([], [IDL.Text], ['query']),
+    'requestPasswordReset' : IDL.Func([IDL.Text], [OtpGenerationResult], []),
+    'scanIp' : IDL.Func([IDL.Text], [IDL.Text], []),
+    'scanPhishing' : IDL.Func([IDL.Text], [IDL.Text], []),
     'scanUrl' : IDL.Func([IDL.Text], [IDL.Text], []),
+    'setAbuseIpDbApiKey' : IDL.Func([IDL.Text], [], []),
+    'setAiApiKey' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'setSafeBrowsingApiKey' : IDL.Func([IDL.Text], [], []),
     'setVirusTotalApiKey' : IDL.Func([IDL.Text], [], []),
     'setWhoisApiKey' : IDL.Func([IDL.Text], [], []),
@@ -107,6 +228,11 @@ export const idlFactory = ({ IDL }) => {
         [TransformationInput],
         [TransformationOutput],
         ['query'],
+      ),
+    'verifyOtpAndResetPassword' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [PasswordResetResult],
+        [],
       ),
   });
 };
